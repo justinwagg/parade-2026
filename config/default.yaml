@@ -1,0 +1,147 @@
+system:
+  name: parade-float-2026
+  environment: development
+hardware:
+  dmx_driver: artnet
+  gpio_driver: simulated
+  pixel_driver: simulated
+  relay_driver: simulated
+network:
+  artnet_nodes:
+  - id: main_node
+    ip: 2.0.0.1
+    port: 6454
+dmx:
+  universes:
+  - id: 1
+    node: main_node
+    protocol: artnet
+    refresh_hz: 40
+    on_node_loss: hold
+fixtures:
+- id: cold_spark
+  name: Cold Spark Machine
+  profile: shehds_cold_spark_450w
+  universe: 1
+  address: 1
+- id: fog_machine
+  name: RockHaze Fog Machine
+  profile: rockville_rockhaze_2ch
+  universe: 1
+  address: 11
+- id: booth_bottom_1
+  name: Booth Bottom 1
+  profile: rockville_rockwedge_6ch
+  universe: 1
+  address: 146
+- id: booth_bottom_2
+  name: Booth Bottom 2
+  profile: rockville_rockwedge_6ch
+  universe: 1
+  address: 152
+- id: booth_bottom_3
+  name: Booth Bottom 3
+  profile: rockville_rockwedge_6ch
+  universe: 1
+  address: 158
+- id: booth_bottom_4
+  name: Booth Bottom 4
+  profile: rockville_rockwedge_6ch
+  universe: 1
+  address: 164
+- id: booth_top_1
+  name: Booth Top 1
+  profile: rockville_rockwedge_6ch
+  universe: 1
+  address: 170
+- id: booth_top_2
+  name: Booth Top 2
+  profile: rockville_rockwedge_6ch
+  universe: 1
+  address: 176
+- id: booth_top_3
+  name: Booth Top 3
+  profile: rockville_rockwedge_6ch
+  universe: 1
+  address: 182
+- id: booth_top_4
+  name: Booth Top 4
+  profile: rockville_rockwedge_6ch
+  universe: 1
+  address: 188
+- id: outside_1
+  name: Outside 1
+  profile: rockville_rockwedge_6ch
+  universe: 1
+  address: 194
+- id: outside_2
+  name: Outside 2
+  profile: rockville_rockwedge_6ch
+  universe: 1
+  address: 200
+- id: outside_3
+  name: Outside 3
+  profile: rockville_rockwedge_6ch
+  universe: 1
+  address: 206
+- id: outside_4
+  name: Outside 4
+  profile: rockville_rockwedge_6ch
+  universe: 1
+  address: 212
+gpio_inputs:
+- id: rotation_index
+  pin: 17
+  pull: up
+  active_low: true
+  debounce_ms: 20
+  description: Turntable index microswitch on phone booth
+- id: performer_button
+  pin: 27
+  pull: up
+  active_low: true
+  debounce_ms: 50
+  description: Momentary button pressed by performer when in position inside booth
+relay_outputs:
+- id: phone_booth_rotation
+  pin: 18
+  active_low: false
+  description: Controls phone booth rotation motor (relay open = motor stops)
+pixel_strips:
+- id: main_strip
+  pin: 12
+  count: 50
+  strip_type: WS2812B
+  description: Main NeoPixel strip on phone booth
+safety:
+  estop_pin: null
+  armed_requires_operator: true
+web:
+  host: 0.0.0.0
+  port: 8080
+  log_level: info
+fixture_groups:
+- id: booth_bottom
+  name: Bottom of Booth
+  fixture_ids:
+  - booth_bottom_1
+  - booth_bottom_2
+  - booth_bottom_3
+  - booth_bottom_4
+  description: ''
+- id: booth_top
+  name: Top of Booth
+  fixture_ids:
+  - booth_top_1
+  - booth_top_2
+  - booth_top_3
+  - booth_top_4
+  description: ''
+- id: outside
+  name: Outside
+  fixture_ids:
+  - outside_1
+  - outside_2
+  - outside_3
+  - outside_4
+  description: ''

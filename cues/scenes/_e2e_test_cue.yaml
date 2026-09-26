@@ -1,0 +1,20 @@
+id: _e2e_test_cue
+description: Cue used by E2E tests — do not delete
+priority: 1
+cooldown_ms: 0
+trigger:
+  event: operator_trigger
+  condition: "event.trigger_id == 'e2e_test'"
+actions:
+  - type: set_var
+    name: e2e_flag
+    value: true
+  - type: set_var
+    name: e2e_flag
+    value: false
+  - type: pixel_chase
+    color: [255, 0, 128]
+    duration_ms: 3000
+    speed_ms: 80
+  - type: wait
+    ms: 500

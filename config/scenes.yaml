@@ -1,0 +1,73 @@
+- id: blue_wash
+  name: Blue Wash
+  fixtures:
+    booth_wash:
+      red: 0
+      green: 0
+      blue: 255
+      white: 0
+      amber: 0
+      uv: 0
+- id: white_flash
+  name: White Flash
+  fixtures:
+    booth_wash:
+      red: 255
+      green: 255
+      blue: 255
+      white: 255
+      amber: 0
+      uv: 0
+- id: amber_warm
+  name: Amber Warm
+  fixtures:
+    booth_wash:
+      red: 255
+      green: 128
+      blue: 0
+      white: 64
+      amber: 200
+      uv: 0
+- id: blackout
+  name: Blackout
+  fixtures:
+    booth_wash:
+      red: 0
+      green: 0
+      blue: 0
+      white: 0
+      amber: 0
+      uv: 0
+- id: cold_spark_low
+  name: Cold Spark Low
+  fixtures:
+    cold_spark:
+      intensity: 80
+- id: cold_spark_high
+  name: Cold Spark High
+  fixtures:
+    cold_spark:
+      intensity: 220
+- id: cold_spark_off
+  name: Cold Spark Off
+  fixtures:
+    cold_spark:
+      intensity: 0
+- id: fog_full
+  name: Fog Full
+  fixtures:
+    fog_machine:
+      haze: 255
+      fan: 200
+- id: fog_low
+  name: Fog Low
+  fixtures:
+    fog_machine:
+      haze: 100
+      fan: 100
+- id: fog_off
+  name: Fog Off
+  fixtures:
+    fog_machine:
+      haze: 0
+      fan: 0

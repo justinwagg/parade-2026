@@ -1,0 +1,13 @@
+id: rockville_rockhaze_2ch
+name: "Rockville RockHaze 700/10000 V2"
+source: "RockHaze_Manual_v2.pdf"
+channel_count: 2
+color_model: none
+channels:
+  haze: 1      # 0=off, 1-255=haze output (thickness / density)
+  fan: 2       # 0=min, 255=max fan speed (controls throw distance)
+notes: |
+  Requires ~2 min preheat before haze output is possible.
+  Set to DMX mode via rear panel (MODE button, select DMX setting).
+  3-pin XLR in/out for daisy-chain. Green remote LED = ready to fire.
+  During self-reheat cycles, output pauses automatically (~572°F / 300°C operating temp).

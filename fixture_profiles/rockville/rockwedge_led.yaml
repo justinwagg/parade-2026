@@ -1,0 +1,60 @@
+# Rockville RockWedge LED Fixture Profiles
+# Source: RockwedgeLED_Manual_v3_OL.pdf (Owner's Manual, © 2024 Rockville)
+# Product: Rockville RockWedge LED — 54W RGBWA+UV Wireless DMX PAR Light
+# LED source: 3 LEDs, 18W each, each LED is 6-in-1 (R/G/B/W/Amber/UV)
+# DMX connector: 3-pin XLR in and out
+# DMX address: set via onboard LCD display (range 001–512)
+
+# --- 6-Channel Mode (display shows D001–D512) ---
+# No master dimmer. Each channel directly controls one LED color.
+
+- id: rockville_rockwedge_6ch
+  name: "Rockville RockWedge LED (6-channel mode)"
+  source: "RockwedgeLED_Manual_v3_OL.pdf, p.7"
+  channel_count: 6
+  color_model: rgbwau
+  channels:
+    red: 1        # Red Dimmer, 0–255
+    green: 2      # Green Dimmer, 0–255
+    blue: 3       # Blue Dimmer, 0–255
+    white: 4      # White Dimmer, 0–255
+    amber: 5      # Amber Dimmer, 0–255
+    uv: 6         # Purple/UV Dimmer, 0–255 (manual labels as "Purple Dimmer"; product is RGBWA+UV)
+  notes: >
+    In 6-channel mode there is no master dimmer — each channel controls one LED color
+    independently (0=off, 255=full). The "Purple Dimmer" channel is the UV LED.
+    Set fixture to D-mode via onboard LCD menu.
+
+# --- 10-Channel Mode (display shows A001–A512) ---
+# Adds master dimmer, strobe, and function/speed channels.
+# For show-control use: keep ch9 (Function) at 0–8 (Close/No Function) for direct color control.
+
+- id: rockville_rockwedge_10ch
+  name: "Rockville RockWedge LED (10-channel mode)"
+  source: "RockwedgeLED_Manual_v3_OL.pdf, p.7"
+  channel_count: 10
+  color_model: rgbwau
+  channels:
+    dimmer: 1     # Master Dimmer, 0–255 (scales all LED outputs)
+    red: 2        # Red Dimmer, 0–255
+    green: 3      # Green Dimmer, 0–255
+    blue: 4       # Blue Dimmer, 0–255
+    white: 5      # White Dimmer, 0–255
+    amber: 6      # Amber Dimmer, 0–255
+    uv: 7         # Purple/UV Dimmer, 0–255
+    strobe: 8     # Strobe, 0–255 (behavior: 0=no strobe; higher values = faster strobe rate)
+    function: 9   # Functions:
+                  #   0–8:    Close (no function — use for direct color control)
+                  #   9–50:   Color Selection Mode
+                  #   51–100: Auto Color Mode
+                  #   101–150: Auto Sudden Mode
+                  #   151–200: Auto Fade Mode
+                  #   201–220: Sound Mode 1 (color change)
+                  #   221–240: Sound Mode 2 (color change + strobe)
+                  #   241–255: Sound Mode 3 (sudden color change)
+    speed: 10     # Color and Speed, 0–255
+  notes: >
+    In 10-channel mode the master dimmer (ch1) scales all LED outputs.
+    For direct color control from show-control software: set ch9 (Function) to 0–8 (Close).
+    Strobe (ch8) behavior at value 0 is no strobe; increasing values increase strobe speed.
+    The "Purple" channel is the UV LED element. Set fixture to A-mode via onboard LCD menu.

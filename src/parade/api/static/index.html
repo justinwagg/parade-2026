@@ -1,0 +1,3219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Parade 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  /* Surface */
+  --bg:        #f3f4f9;
+  --card:      #ffffff;
+  --raised:    #eef0f8;
+  --overlay:   #e4e6f2;
+  /* Borders */
+  --border:    #d8dce8;
+  --border-hi: #b8bcd0;
+  /* Text */
+  --text:      #1a1b2e;
+  --muted:     #6b6e8a;
+  /* Accents */
+  --blue:      #3b5bdb;
+  --green:     #2d9e75;
+  --yellow:    #c47d00;
+  --orange:    #c25d1e;
+  --red:       #cf3a3a;
+  --purple:    #7048e8;
+  --pink:      #c2357e;
+  --teal:      #0f8a7a;
+  /* Elevation */
+  --shadow-sm: 0 1px 4px rgba(0,0,0,.07);
+  --shadow-md: 0 4px 16px rgba(0,0,0,.09);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,.13);
+  /* Layout */
+  --radius:    10px;
+  --radius-sm: 6px;
+  --ease:      cubic-bezier(.2,.8,.2,1);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border-hi);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--muted)}
+
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Inter',system-ui,-apple-system,sans-serif;
+  font-size:13px;line-height:1.5;
+  min-height:100vh;display:flex;flex-direction:column;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ── Header ── */
+#header{
+  background:var(--card);
+  border-bottom:1px solid var(--border);
+  padding:0 20px;
+  height:54px;
+  display:flex;
+  align-items:center;
+  gap:14px;
+  flex-shrink:0;
+  position:sticky;top:0;z-index:100;
+  box-shadow:var(--shadow-md);
+}
+#header h1{
+  font-size:14px;font-weight:700;letter-spacing:.8px;white-space:nowrap;
+  color:var(--text);text-transform:uppercase;
+}
+.logo-dot{width:9px;height:9px;border-radius:50%;background:var(--green);flex-shrink:0;
+  box-shadow:0 0 6px var(--green);transition:background .3s}
+
+.state-pill{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:4px 12px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;
+  transition:background .3s var(--ease),color .3s;border:1px solid transparent;
+}
+.sp-RUNNING{background:rgba(45,158,117,.1);color:var(--green);border-color:rgba(45,158,117,.3)}
+.sp-READY  {background:rgba(196,125,0,.1);color:var(--yellow);border-color:rgba(196,125,0,.3)}
+.sp-SAFE   {background:rgba(107,110,138,.08);color:var(--muted);border-color:var(--border)}
+.sp-BOOTING{background:rgba(59,91,219,.1);color:var(--blue);border-color:rgba(59,91,219,.3)}
+.sp-PAUSED {background:rgba(194,93,30,.1);color:var(--orange);border-color:rgba(194,93,30,.3)}
+.sp-EMERGENCY_STOP{background:rgba(207,58,58,.15);color:var(--red);border-color:rgba(207,58,58,.4);animation:blink .9s infinite}
+.sp-FAULT  {background:rgba(207,58,58,.1);color:var(--red);border-color:rgba(207,58,58,.35)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
+
+.armed-tag{
+  font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px;
+  background:var(--raised);color:var(--muted);border:1px solid var(--border);
+  letter-spacing:.5px;text-transform:uppercase;
+}
+.armed-tag.yes{background:rgba(45,158,117,.1);color:var(--green);border-color:rgba(45,158,117,.3)}
+
+.conn-indicator{display:flex;align-items:center;gap:5px;margin-left:auto}
+.conn-dot{width:7px;height:7px;border-radius:50%;background:var(--muted);transition:background .3s}
+.conn-dot.ok{background:var(--green);box-shadow:0 0 5px var(--green)}
+.conn-dot.err{background:var(--red)}
+#conn-label{font-size:11px;color:var(--muted)}
+
+/* ── State info bar ── */
+#state-info-bar{
+  background:rgba(238,240,248,.92);
+  border-bottom:1px solid var(--border);
+  padding:5px 20px;
+  font-size:11px;
+  color:var(--muted);
+  display:flex;
+  align-items:baseline;
+  gap:10px;
+  flex-shrink:0;
+  min-height:26px;
+  backdrop-filter:blur(8px);
+}
+#state-info-bar.sib-estop{background:rgba(207,58,58,.06);border-bottom-color:rgba(207,58,58,.25)}
+#state-info-bar.sib-running{background:rgba(45,158,117,.05);border-bottom-color:rgba(45,158,117,.2)}
+
+/* ── Tab bar ── */
+#tabs{
+  display:flex;
+  background:var(--card);
+  border-bottom:1px solid var(--border);
+  padding:0 16px;
+  flex-shrink:0;
+  gap:0;
+}
+.tab{
+  padding:10px 18px;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;
+  color:var(--muted);border-bottom:2px solid transparent;cursor:pointer;
+  transition:color .15s var(--ease),border-color .15s;user-select:none;white-space:nowrap;
+}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--blue);border-bottom-color:var(--blue)}
+/* ── Main / panels ── */
+#main{flex:1;overflow:hidden;display:flex;flex-direction:column}
+.panel{display:none;flex:1;overflow-y:auto;padding:16px;gap:16px}
+.panel.active{display:grid}
+#panel-manual.active{display:flex;flex-direction:column;gap:12px}
+#panel-live{grid-template-columns:270px 1fr;overflow:hidden;align-items:stretch}
+#live-output-col{display:flex;flex-direction:column;gap:12px;min-height:0;overflow-y:auto}
+#card-log{flex:1;min-height:100px;display:flex;flex-direction:column}
+#card-log #log-entries{flex:1;overflow-y:auto;max-height:none}
+
+/* grid helpers */
+.g1{grid-template-columns:1fr}
+.g2{grid-template-columns:1fr 1fr}
+.gfull{grid-column:1/-1}
+
+/* ── Cards ── */
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:16px;
+  display:flex;flex-direction:column;gap:12px;
+  box-shadow:var(--shadow-sm);
+}
+.card-title{
+  font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.9px;
+  color:var(--muted);padding-bottom:10px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:8px;
+}
+.card-title .ct-icon{font-size:14px}
+
+/* ── Buttons ── */
+button{
+  background:var(--raised);color:var(--text);border:1px solid var(--border-hi);
+  border-radius:var(--radius-sm);padding:6px 14px;cursor:pointer;font-size:12px;font-weight:500;
+  font-family:inherit;transition:background .12s var(--ease),border-color .12s,box-shadow .12s,opacity .12s;
+}
+button:hover:not(:disabled){background:var(--overlay);border-color:var(--muted)}
+button:active:not(:disabled){transform:translateY(1px)}
+button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+button:disabled{opacity:.3;cursor:default}
+button.btn-primary{
+  background:rgba(45,158,117,.1);border-color:rgba(45,158,117,.4);color:var(--green);
+}
+button.btn-primary:hover:not(:disabled){background:rgba(45,158,117,.18);border-color:var(--green)}
+button.btn-danger{background:rgba(207,58,58,.08);border-color:rgba(207,58,58,.35);color:var(--red)}
+button.btn-danger:hover:not(:disabled){background:rgba(207,58,58,.15);border-color:var(--red)}
+button.btn-fire{background:rgba(196,125,0,.08);border-color:rgba(196,125,0,.35);color:var(--yellow)}
+button.btn-fire:hover:not(:disabled){background:rgba(196,125,0,.15);border-color:var(--yellow)}
+button.btn-sm{padding:4px 10px;font-size:11px}
+button.btn-icon{padding:4px 8px;font-size:13px;line-height:1;background:none;border-color:transparent}
+button.btn-icon:hover:not(:disabled){background:var(--overlay);border-color:var(--border-hi)}
+
+/* ── State controls ── */
+#state-transitions{display:flex;gap:8px;flex-wrap:wrap}
+
+/* ── Progress bar ── */
+.prog-track{height:6px;background:var(--raised);border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;background:var(--blue);border-radius:3px;transition:width .3s}
+.prog-fill.done{background:var(--green)}
+.prog-fill.running{background:var(--blue);animation:shimmer 1.5s linear infinite}
+@keyframes shimmer{0%{opacity:1}50%{opacity:.6}100%{opacity:1}}
+
+/* ── Step list ── */
+.step-list{display:flex;flex-direction:column;gap:4px}
+.step-row{
+  display:flex;align-items:center;gap:8px;padding:5px 8px;
+  border-radius:var(--radius-sm);font-size:12px;color:var(--muted);
+}
+.step-row.done{color:var(--text)}
+.step-row.active{background:var(--raised);color:var(--text);border-left:2px solid var(--blue)}
+.step-row.pending{opacity:.4}
+.step-num{
+  width:18px;height:18px;border-radius:50%;border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;
+}
+.step-num.done{background:var(--green);border-color:var(--green);color:#fff}
+.step-num.active{background:var(--blue);border-color:var(--blue);color:#fff;animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+
+/* ── Event log ── */
+#log-entries{
+  display:flex;flex-direction:column;gap:3px;
+  max-height:320px;overflow-y:auto;font-family:monospace;
+}
+.log-row{
+  display:flex;gap:8px;padding:3px 6px;border-radius:3px;font-size:11px;
+  align-items:baseline;
+}
+.log-row:hover{background:var(--raised)}
+.log-time{color:var(--muted);flex-shrink:0;font-size:10px}
+.log-tag{
+  padding:1px 5px;border-radius:3px;font-size:9px;font-weight:700;
+  text-transform:uppercase;flex-shrink:0;letter-spacing:.4px;
+}
+.tag-gpio    {background:rgba(59,91,219,.1);color:var(--blue)}
+.tag-cue     {background:rgba(45,158,117,.1);color:var(--green)}
+.tag-operator{background:rgba(196,125,0,.1);color:var(--yellow)}
+.tag-system  {background:rgba(112,72,232,.1);color:var(--purple)}
+.tag-error   {background:rgba(207,58,58,.1);color:var(--red)}
+.log-msg{color:var(--text);font-size:11px}
+
+/* ── GPIO pin strip ── */
+.gpio-grid{display:flex;flex-direction:column;gap:3px}
+.pin-row{display:flex;gap:4px;align-items:center;font-size:11px}
+.pin-cell{
+  width:150px;display:flex;align-items:center;gap:5px;
+  padding:4px 7px;border-radius:4px;border:1px solid var(--border);
+  background:var(--raised);cursor:default;
+}
+.pin-cell.clickable{cursor:pointer;transition:border-color .12s}
+.pin-cell.clickable:hover{border-color:var(--blue)}
+.pin-cell.active-high{border-color:var(--green);background:rgba(45,158,117,.07)}
+.pin-dot{width:8px;height:8px;border-radius:50%;background:var(--border);flex-shrink:0}
+.pin-dot.pw {background:#cc3333}
+.pin-dot.v33{background:#e07800}
+.pin-dot.gnd{background:#888}
+.pin-dot.gpio-idle{background:#b8bcd0}
+.pin-dot.gpio-active{background:var(--green)}
+.pin-dot.gpio-out{background:var(--blue)}
+.pin-dot.gpio-pwm{background:var(--purple)}
+.pin-label{font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.pin-num{font-size:9px;color:var(--muted);flex-shrink:0}
+.pin-divider{font-size:10px;color:var(--border);margin:0 2px}
+
+/* ── Relay card ── */
+.relay-grid{display:flex;flex-direction:column;gap:6px}
+.relay-row{
+  display:flex;align-items:center;gap:10px;padding:8px 10px;
+  border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--raised);
+}
+.relay-indicator{
+  width:12px;height:12px;border-radius:50%;background:#b8bcd0;flex-shrink:0;
+  transition:background .2s,box-shadow .2s;
+}
+.relay-indicator.on{background:var(--green);box-shadow:0 0 8px var(--green)}
+.relay-name{flex:1;font-family:monospace;font-size:12px}
+.relay-status{font-size:11px;font-weight:600;min-width:28px;text-align:right}
+
+/* ── Fixture visualizer ── */
+.fviz-section{margin-bottom:10px}
+.fviz-section:last-child{margin-bottom:0}
+.fviz-section-title{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-bottom:6px}
+.fviz-groups{display:flex;flex-direction:column;gap:6px}
+.fviz-group{background:var(--raised);border-radius:var(--radius-sm);padding:7px 8px}
+.fviz-group-title{font-size:9px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:5px}
+.fviz-fixtures{display:flex;gap:6px;flex-wrap:wrap;align-items:flex-end}
+.fviz-fixture{display:flex;flex-direction:column;align-items:center;gap:2px}
+.fviz-swatch{width:34px;height:34px;border-radius:50%;border:2px solid var(--border);box-shadow:var(--shadow-sm);transition:background .08s,border-color .08s}
+.fviz-label{font-size:9px;color:var(--muted);text-align:center;line-height:1}
+.fviz-bar-fixture{display:flex;align-items:center;gap:8px;padding:2px 0;width:100%}
+.fviz-bar-name{font-size:11px;min-width:120px;flex-shrink:0}
+.fviz-bar-track{flex:1;height:10px;background:var(--raised);border-radius:5px;overflow:hidden;border:1px solid var(--border)}
+.fviz-bar-fill{height:100%;border-radius:5px;transition:width .12s}
+.fviz-bar-pct{font-size:10px;color:var(--muted);min-width:28px;text-align:right}
+
+/* ── NeoPixel strip ── */
+.pixel-scroll{overflow-x:auto;padding:4px 0 8px}
+.pixel-strip{display:flex;gap:2px;min-width:max-content}
+.px{width:16px;height:48px;border-radius:3px;background:#dde0ec;border:1px solid var(--border);flex-shrink:0;transition:background .06s}
+
+/* ── DMX table ── */
+.dmx-table{width:100%;border-collapse:collapse;font-size:12px}
+.dmx-table th{color:var(--muted);padding:4px 6px;border-bottom:1px solid var(--border);text-align:left;font-size:11px;font-weight:600}
+.dmx-table td{padding:3px 6px;border-bottom:1px solid var(--border)}
+.bar-bg{background:var(--raised);border-radius:2px;height:6px;width:80px;display:inline-block;vertical-align:middle}
+.bar-fill{background:var(--blue);border-radius:2px;height:100%;transition:width .1s}
+.val-num{font-variant-numeric:tabular-nums;min-width:32px;display:inline-block;text-align:right}
+
+/* ── Scene grid ── */
+.scene-row{
+  display:flex;align-items:center;gap:8px;padding:6px 8px;
+  background:var(--raised);border-radius:var(--radius-sm);border:1px solid var(--border);
+}
+.scene-name{flex:1;font-size:12px}
+.fade-input{
+  width:72px;background:var(--raised);border:1px solid var(--border);
+  color:var(--text);border-radius:var(--radius-sm);padding:4px 6px;font-size:11px;font-family:inherit;
+}
+
+/* ── Cue cards ── */
+.cue-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px}
+.cue-card{background:var(--raised);border:1px solid var(--border);border-radius:var(--radius);padding:12px}
+.cue-id{font-family:monospace;font-size:13px;font-weight:600;color:var(--blue)}
+.cue-desc{font-size:11px;color:var(--muted);margin-top:2px}
+.cue-section{font-size:9px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin:8px 0 3px}
+.cue-trigger{font-size:11px;background:var(--card);padding:5px 8px;border-radius:4px;border-left:3px solid var(--orange);font-family:monospace}
+.cue-actions{list-style:none;margin:0}
+.cue-actions li{font-size:11px;color:var(--muted);padding:2px 0;display:flex;gap:6px;align-items:center}
+.cue-actions li::before{content:'→';color:var(--green);font-size:10px;flex-shrink:0}
+.cue-footer{display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:8px;border-top:1px solid var(--border)}
+.cue-meta{font-size:10px;color:var(--muted)}
+
+/* ── Form elements ── */
+input[type=number],input[type=text],select,textarea{
+  background:var(--raised);border:1px solid var(--border);color:var(--text);
+  border-radius:var(--radius-sm);padding:5px 8px;font-size:12px;font-family:inherit;width:100%;
+  transition:border-color .15s,box-shadow .15s;
+}
+input[type=number]:hover,input[type=text]:hover,select:hover{border-color:var(--border-hi)}
+input[type=number]:focus,input[type=text]:focus,select:focus,textarea:focus{
+  outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,91,219,.15);
+}
+input[type=range]{width:100%;cursor:pointer;accent-color:var(--blue)}
+textarea{resize:vertical;min-height:48px;font-size:11px}
+.form-row{display:grid;grid-template-columns:100px 1fr;align-items:center;gap:8px}
+.form-label{font-size:11px;color:var(--muted)}
+.slider-row{display:flex;align-items:center;gap:8px}
+.slider-val{font-size:13px;font-weight:600;color:var(--blue);min-width:32px;text-align:right}
+
+/* ── Misc ── */
+.msg{font-size:11px;min-height:16px;margin-top:4px}
+.msg.ok{color:var(--green)}.msg.err{color:var(--red)}
+details{margin-top:8px}
+summary{font-size:11px;color:var(--muted);cursor:pointer;padding:4px 0;user-select:none}
+summary:hover{color:var(--text)}
+.details-body{margin-top:8px;display:flex;flex-direction:column;gap:8px}
+.empty{color:var(--muted);font-style:italic;font-size:12px;padding:8px 0}
+.flex{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.flex-col{display:flex;flex-direction:column;gap:8px}
+hr.div{border:none;border-top:1px solid var(--border);margin:6px 0}
+
+@media(max-width:760px){
+  .g2{grid-template-columns:1fr}
+  .gfull{grid-column:1}
+}
+
+/* ══ Builder ═══════════════════════════════════════════════════════════════ */
+#panel-routines{grid-template-columns:220px 1fr!important;align-items:start}
+
+/* Library sidebar */
+.bldr-lib-item{
+  display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:var(--radius-sm);
+  cursor:pointer;border:1px solid transparent;
+  transition:background .12s var(--ease),border-color .15s;
+}
+.bldr-lib-item:hover{background:var(--raised);border-color:var(--border)}
+.bldr-lib-item.selected{background:var(--raised);border-color:var(--blue);box-shadow:0 0 0 1px rgba(59,91,219,.2)}
+.bldr-lib-name{flex:1;font-size:12px;font-weight:500}
+.bldr-lib-desc{font-size:10px;color:var(--muted)}
+.bldr-lib-del{opacity:0;font-size:11px;padding:2px 5px;color:var(--red);background:none;border:none;cursor:pointer;transition:opacity .12s}
+.bldr-lib-item:hover .bldr-lib-del{opacity:1}
+
+/* Editor */
+.bldr-meta{display:flex;gap:8px;align-items:center}
+.bldr-meta input[type=text]{background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:var(--radius-sm);padding:5px 8px;font-size:12px;font-family:inherit}
+.bldr-meta .bldr-name-field{flex:1;font-size:14px;font-weight:600}
+
+.bldr-settings{display:flex;gap:16px;flex-wrap:wrap;padding:8px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin:4px 0}
+.bldr-settings label{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)}
+.bldr-settings input{width:72px;padding:3px 6px;font-size:11px;background:var(--raised);border:1px solid var(--border);color:var(--text);border-radius:var(--radius-sm)}
+
+/* Section labels */
+.bldr-section{font-size:9px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);padding:8px 0 4px;display:flex;align-items:center;gap:8px}
+
+/* Trigger block */
+.bldr-trigger-block{
+  border:1px solid var(--orange);border-radius:var(--radius);padding:10px 12px;
+  background:var(--card);
+  display:flex;flex-direction:column;gap:8px;min-width:0;overflow:hidden;
+}
+.bldr-trigger-header{display:flex;align-items:center;gap:8px}
+.bldr-trigger-icon{font-size:16px}
+.bldr-trigger-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--orange)}
+.bldr-trigger-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px;min-width:0}
+.bldr-trigger-fields label{font-size:10px;color:var(--muted);display:flex;flex-direction:column;gap:3px;min-width:0;overflow:hidden}
+.bldr-trigger-fields select,.bldr-trigger-fields input{background:var(--raised);border:1px solid var(--border);color:var(--text);border-radius:var(--radius-sm);padding:4px 6px;font-size:11px;font-family:inherit;width:100%;min-width:0}
+.toggle-pill{min-width:0}
+
+/* Step cards */
+.bldr-step{
+  border:1px solid var(--border);border-radius:var(--radius);
+  background:var(--raised);position:relative;
+  transition:border-color var(--ease) .15s,box-shadow var(--ease) .15s,transform .1s;
+  cursor:grab;box-shadow:var(--shadow-sm);
+}
+.bldr-step:hover{box-shadow:var(--shadow-md);border-color:rgba(59,91,219,.35)}
+.bldr-step.drag-over{border-color:var(--blue);box-shadow:0 0 0 2px rgba(59,91,219,.3)}
+.bldr-step.expanded{border-color:var(--blue);box-shadow:var(--shadow-md)}
+.bldr-step-header{
+  display:flex;align-items:center;gap:8px;padding:10px 12px;
+}
+.bldr-drag-handle{font-size:14px;color:rgba(0,0,0,.15);cursor:grab;flex-shrink:0;line-height:1;transition:color .15s}
+.bldr-step:hover .bldr-drag-handle{color:var(--muted)}
+.bldr-step-icon{font-size:15px;flex-shrink:0}
+.bldr-step-type{font-size:11px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.5px}
+.bldr-step-summary{font-size:11px;color:var(--muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bldr-step-actions{display:flex;gap:4px;flex-shrink:0}
+
+/* Step property form (expanded) */
+.bldr-step-form{
+  padding:0 12px 12px;
+  border-top:1px solid var(--border);
+  display:grid;grid-template-columns:1fr 1fr;gap:8px;
+}
+.bldr-step-form.wide{grid-template-columns:1fr}
+.bldr-field{display:flex;flex-direction:column;gap:3px}
+.bldr-field label{font-size:10px;font-weight:600;color:var(--muted);letter-spacing:.3px;text-transform:uppercase}
+.bldr-field input,.bldr-field select{
+  background:var(--card);border:1px solid var(--border);color:var(--text);
+  border-radius:var(--radius-sm);padding:5px 8px;font-size:12px;font-family:inherit;
+  transition:border-color .15s,box-shadow .15s;
+}
+.bldr-field input:focus,.bldr-field select:focus{
+  outline:none;border-color:var(--blue);box-shadow:0 0 0 2px rgba(59,91,219,.2);
+}
+.bldr-field input[type=color]{padding:2px;height:30px;cursor:pointer;width:60px}
+.bldr-field-row{display:flex;gap:6px;align-items:center}
+.bldr-field-row input[type=color]{flex-shrink:0}
+.bldr-field-row input[type=text]{flex:1}
+
+/* Add step picker */
+.bldr-add-btn{
+  border:1px dashed var(--border);border-radius:var(--radius);padding:10px;
+  text-align:center;color:var(--muted);cursor:pointer;font-size:12px;
+  transition:border-color .15s,color .15s,background .15s;background:none;width:100%;
+}
+.bldr-add-btn:hover{border-color:var(--blue);color:var(--blue);background:rgba(59,91,219,.05)}
+
+.bldr-picker{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;
+  padding:12px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  box-shadow:var(--shadow-lg);
+}
+.bldr-picker-item{
+  display:flex;align-items:center;gap:8px;padding:9px 11px;border-radius:var(--radius-sm);
+  cursor:pointer;border:1px solid var(--border);background:var(--raised);
+  font-size:12px;transition:border-color .15s,background .15s,transform .1s;
+}
+.bldr-picker-item:hover{border-color:var(--blue);background:rgba(59,91,219,.08);transform:translateY(-1px)}
+.bldr-picker-item:active{transform:translateY(0)}
+.bldr-picker-item span:first-child{font-size:16px}
+
+/* Step number badge */
+.bldr-step-num{
+  min-width:20px;height:20px;border-radius:50%;border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--muted);flex-shrink:0;
+  font-weight:600;
+}
+
+/* Toggle pill */
+.toggle-pill{display:flex;border:1px solid var(--border);border-radius:20px;overflow:hidden}
+.toggle-pill button{
+  border:none;border-radius:0;padding:5px 14px;font-size:11px;background:var(--raised);color:var(--muted);
+  cursor:pointer;transition:background .15s,color .15s;font-weight:500;
+}
+.toggle-pill button.active{background:var(--blue);color:#fff;font-weight:700}
+</style>
+</head>
+<body>
+
+<!-- ═══ HEADER ═══════════════════════════════════════════════════════════ -->
+<div id="header">
+  <div class="logo-dot" id="eng-dot"></div>
+  <h1>PARADE 2026</h1>
+  <span id="state-pill" class="state-pill sp-BOOTING">BOOTING</span>
+  <span id="armed-tag" class="armed-tag">DISARMED</span>
+
+  <div id="state-transitions" style="margin-left:8px"></div>
+  <span id="state-msg" style="font-size:11px;min-width:120px"></span>
+
+  <div class="conn-indicator">
+    <div class="conn-dot" id="conn-dot"></div>
+    <span id="conn-label">connecting</span>
+  </div>
+</div>
+
+<!-- ═══ STATE INFO BAR ═══════════════════════════════════════════════════ -->
+<div id="state-info-bar">
+  <span id="sib-desc" style="color:var(--text)"></span>
+  <span id="sib-hint"></span>
+</div>
+
+<!-- ═══ TABS ══════════════════════════════════════════════════════════════ -->
+<div id="tabs">
+  <div class="tab active" data-tab="live">Live</div>
+  <div class="tab" data-tab="hardware">Hardware</div>
+  <div class="tab" data-tab="setup">Setup</div>
+  <div class="tab" data-tab="routines">Builder</div>
+  <div class="tab" data-tab="manual">Manual</div>
+</div>
+
+<!-- ═══ MAIN ══════════════════════════════════════════════════════════════ -->
+<div id="main">
+
+  <!-- ─ LIVE ─────────────────────────────────────────────────────────── -->
+  <div class="panel active" id="panel-live">
+
+    <!-- Left column: all trigger controls -->
+    <div class="card" id="card-sim-controls" style="display:flex;flex-direction:column;gap:10px;overflow-y:auto">
+      <div class="card-title"><span class="ct-icon">🎮</span>Simulation Controls</div>
+      <div id="sim-state-banner" style="display:none;padding:8px 12px;border-radius:var(--radius-sm);font-size:12px;display:flex;align-items:center;justify-content:space-between;gap:8px;background:rgba(196,125,0,.08);border:1px solid rgba(196,125,0,.3);color:var(--yellow)">
+        <span>⚠ Engine is <strong id="sim-banner-state">SAFE</strong> — cues will not fire until system is <strong>RUNNING</strong></span>
+        <div style="display:flex;gap:6px;flex-shrink:0" id="sim-banner-btns"></div>
+      </div>
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)">GPIO Inputs</div>
+      <div id="gpio-sim-btns" class="flex"></div>
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)">Relay Overrides</div>
+      <div id="relay-sim-btns" class="flex"></div>
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)">Operator Triggers</div>
+      <div id="op-trigger-btns" class="flex"></div>
+      <div class="msg" id="trigger-msg"></div>
+      <details>
+        <summary>Custom event inject</summary>
+        <div class="details-body">
+          <div>
+            <div class="form-label" style="margin-bottom:4px">Trigger ID</div>
+            <input type="text" id="inject-type" placeholder="e.g. flash" value="flash">
+          </div>
+          <div>
+            <div class="form-label" style="margin-bottom:4px">Params (JSON)</div>
+            <textarea id="inject-params">{}</textarea>
+          </div>
+          <button onclick="injectEvent()">Send</button>
+          <div class="msg" id="inject-msg"></div>
+        </div>
+      </details>
+    </div>
+
+    <!-- Right column: output -->
+    <div id="live-output-col">
+
+      <!-- Routine Progress -->
+      <div class="card" id="card-progress">
+        <div class="card-title"><span class="ct-icon">⚡</span>Routine Progress</div>
+        <div id="prog-idle" style="color:var(--muted);font-size:12px">No routine running — engine idle.</div>
+        <div id="prog-active" style="display:none">
+          <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:8px">
+            <span style="font-size:14px;font-weight:700;color:var(--blue)" id="prog-cue-name">—</span>
+            <span style="font-size:11px;color:var(--muted)" id="prog-step-label">step 0/0</span>
+          </div>
+          <div class="prog-track" style="margin-bottom:10px">
+            <div class="prog-fill running" id="prog-bar" style="width:0%"></div>
+          </div>
+          <div class="step-list" id="step-list"></div>
+        </div>
+      </div>
+
+      <!-- Relay status -->
+      <div class="card">
+        <div class="card-title"><span class="ct-icon">🔌</span>Relay Outputs</div>
+        <div class="relay-grid" id="relay-grid-live"></div>
+      </div>
+
+      <!-- Float fixture visualization -->
+      <div class="card">
+        <div class="card-title"><span class="ct-icon">🎭</span>Float Fixtures</div>
+        <div id="fixture-viz-grid"><span class="empty">Loading fixtures…</span></div>
+      </div>
+
+      <!-- NeoPixel Strip -->
+      <div class="card">
+        <div class="card-title">
+          <span class="ct-icon">💡</span>NeoPixel Strip
+          <span id="pixel-count" style="font-size:10px;color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0"></span>
+        </div>
+        <div class="pixel-scroll">
+          <div class="pixel-strip" id="pixel-strip"></div>
+        </div>
+      </div>
+
+      <!-- Event Log -->
+      <div class="card" id="card-log">
+        <div class="card-title" style="justify-content:space-between">
+          <span><span class="ct-icon">📋</span> Event Log</span>
+          <button class="btn-sm btn-icon" onclick="clearLog()" title="Clear log">✕</button>
+        </div>
+        <div id="log-entries"></div>
+      </div>
+
+    </div><!-- /live-output-col -->
+
+  </div><!-- /panel-live -->
+
+  <!-- ─ HARDWARE ───────────────────────────────────────────────────────── -->
+  <div class="panel g2" id="panel-hardware">
+
+    <!-- RPi Pin Map -->
+    <div class="card gfull">
+      <div class="card-title"><span class="ct-icon">🖥</span>Raspberry Pi GPIO Header</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:10px">
+        Physical pin pairs (odd left / even right).
+        <span style="color:var(--green)">■</span> input active &nbsp;
+        <span style="color:var(--blue)">■</span> output &nbsp;
+        <span style="color:var(--purple)">■</span> PWM &nbsp;
+        <span style="color:#cc3333">■</span> 5V &nbsp;
+        <span style="color:#ff9900">■</span> 3.3V &nbsp;
+        <span style="color:#555">■</span> GND
+      </div>
+      <div class="gpio-grid" id="rpi-pins"></div>
+    </div>
+
+    <!-- DMX Output -->
+    <div class="card">
+      <div class="card-title"><span class="ct-icon">🎚</span>DMX Output</div>
+      <div id="dmx-universes"></div>
+    </div>
+
+    <!-- Relay status -->
+    <div class="card">
+      <div class="card-title"><span class="ct-icon">🔌</span>Relay Outputs</div>
+      <div class="relay-grid" id="relay-grid-hw"></div>
+    </div>
+
+  </div><!-- /panel-hardware -->
+
+  <!-- ─ SETUP ─────────────────────────────────────────────────────────── -->
+  <div class="panel g1" id="panel-setup">
+
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <button class="btn-primary" onclick="setupSave()">Save &amp; Apply Configuration</button>
+      <span class="msg" id="setup-msg" style="margin:0"></span>
+      <span style="font-size:11px;color:var(--muted);margin-left:auto">
+        Changes apply immediately in simulation. Real GPIO pin changes need a restart.
+      </span>
+    </div>
+
+    <!-- DMX Fixtures -->
+    <div class="card">
+      <div class="card-title">
+        <span class="ct-icon">🎚</span>DMX Fixtures
+        <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted);font-size:10px">
+          — define every light here, then reference it in scenes
+        </span>
+      </div>
+      <div id="setup-fixtures-list"></div>
+      <hr class="div" style="margin:10px 0">
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-bottom:6px">Add fixture</div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <input type="text" id="nf-id" placeholder="id (e.g. wash_left)" style="flex:1;min-width:110px;font-size:11px">
+        <input type="text" id="nf-name" placeholder="Display name" style="flex:1;min-width:120px;font-size:11px">
+        <select id="nf-profile" style="flex:1.5;min-width:160px;font-size:11px" onchange="setupUpdateChPreview()"></select>
+        <label style="font-size:11px;color:var(--muted);display:flex;align-items:center;gap:4px;white-space:nowrap">
+          Universe <input type="number" id="nf-universe" value="1" min="1" style="width:48px;font-size:11px;padding:4px 6px" oninput="setupUpdateChPreview()">
+        </label>
+        <label style="font-size:11px;color:var(--muted);display:flex;align-items:center;gap:4px;white-space:nowrap">
+          Addr <input type="number" id="nf-address" value="1" min="1" max="512" style="width:56px;font-size:11px;padding:4px 6px" oninput="setupUpdateChPreview()">
+        </label>
+        <button id="nf-add-btn" class="btn-sm btn-primary" onclick="setupAddFixture()">+ Add</button>
+      </div>
+      <div style="font-size:11px;margin-top:4px;height:16px"><span id="nf-ch-preview" style="color:var(--muted)"></span></div>
+    </div>
+
+    <!-- Fixture Groups -->
+    <div class="card">
+      <div class="card-title">
+        <span class="ct-icon">🎯</span>Fixture Groups
+        <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted);font-size:10px">
+          — assign fixtures to named groups; use groups in Builder actions
+        </span>
+      </div>
+      <div id="setup-groups-list"></div>
+      <hr class="div" style="margin:10px 0">
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-bottom:6px" id="ngrp-form-title">Add group</div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+          <input type="text" id="ngrp-id" placeholder="id (e.g. inside_bottom)" style="font-size:11px">
+          <input type="text" id="ngrp-name" placeholder="Display name" style="font-size:11px">
+        </div>
+        <input type="text" id="ngrp-desc" placeholder="Description (optional)" style="font-size:11px">
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">Fixtures in group:</div>
+        <div id="ngrp-fixtures" style="display:flex;flex-wrap:wrap;gap:6px;padding:6px;background:var(--bg);border-radius:4px;min-height:32px;border:1px solid var(--border)"></div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <button id="ngrp-add-btn" class="btn-sm btn-primary" onclick="setupAddGroup()">+ Add Group</button>
+          <button id="ngrp-cancel-btn" class="btn-sm" style="display:none" onclick="setupCancelGroupEdit()">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- GPIO Inputs + Relay Outputs -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+
+      <!-- GPIO Inputs -->
+      <div class="card">
+        <div class="card-title"><span class="ct-icon">📌</span>GPIO Inputs</div>
+        <div id="setup-gpio-list"></div>
+        <hr class="div" style="margin:10px 0">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-bottom:6px">Add input</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+            <input type="text" id="ng-id" placeholder="id (e.g. btn_start)" style="font-size:11px">
+            <input type="number" id="ng-pin" placeholder="BCM pin #" style="font-size:11px">
+          </div>
+          <input type="text" id="ng-desc" placeholder="Description (shown in UI)" style="font-size:11px">
+          <div style="display:flex;gap:8px;align-items:center">
+            <label style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);cursor:pointer">
+              <input type="checkbox" id="ng-active-low"> Active-low (pull-up resistor)
+            </label>
+            <button id="ng-add-btn" class="btn-sm btn-primary" style="margin-left:auto" onclick="setupAddGPIO()">+ Add</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Relay Outputs -->
+      <div class="card">
+        <div class="card-title"><span class="ct-icon">🔌</span>Relay Outputs</div>
+        <div id="setup-relay-list"></div>
+        <hr class="div" style="margin:10px 0">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-bottom:6px">Add relay</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+            <input type="text" id="nr-id" placeholder="id (e.g. motor_stop)" style="font-size:11px">
+            <input type="number" id="nr-pin" placeholder="BCM pin (0 = sim only)" value="0" style="font-size:11px">
+          </div>
+          <input type="text" id="nr-desc" placeholder="Description (shown in UI)" style="font-size:11px">
+          <button id="nr-add-btn" class="btn-sm btn-primary" style="align-self:flex-end" onclick="setupAddRelay()">+ Add</button>
+        </div>
+      </div>
+
+    </div>
+
+  </div><!-- /panel-setup -->
+
+  <!-- ─ BUILDER ───────────────────────────────────────────────────────── -->
+  <div class="panel g2" id="panel-routines">
+
+    <!-- Library sidebar -->
+    <div class="card" style="align-self:start">
+      <div class="card-title" style="justify-content:space-between">
+        <span>My Scenes</span>
+        <button class="btn-sm btn-primary" onclick="bldrNew()">+ New</button>
+      </div>
+      <div id="bldr-library"><div class="empty">No scenes saved yet.</div></div>
+      <hr class="div">
+      <details>
+        <summary style="color:var(--orange);font-weight:600">How scenes &amp; flags work</summary>
+        <div class="details-body" style="font-size:11px;color:var(--muted);line-height:1.65">
+          <p>Each scene fires <b style="color:var(--text)">independently</b> the moment its trigger occurs.</p>
+          <p style="margin-top:6px"><b style="color:var(--orange)">Flags</b> are how you connect scenes. A "Set Flag" step records that something happened; the "Only fire if flag" trigger setting checks for it.</p>
+        </div>
+      </details>
+      <hr class="div">
+      <details>
+        <summary>View all loaded cues</summary>
+        <div id="cue-grid" class="cue-grid" style="margin-top:10px"></div>
+      </details>
+    </div>
+
+    <!-- Routine Editor -->
+    <div class="card" id="bldr-editor">
+      <div class="bldr-meta">
+        <input type="text" id="bldr-name" class="bldr-name-field" placeholder="Scene name...">
+        <input type="text" id="bldr-desc" placeholder="Description (optional)..." style="flex:1.5;font-size:11px">
+        <button class="btn-primary" onclick="bldrSave()">Save Scene</button>
+        <div class="msg" id="bldr-msg" style="white-space:nowrap;margin:0"></div>
+      </div>
+
+      <div class="bldr-settings">
+        <label>Priority <input type="number" id="bldr-priority" value="10" min="1" max="100"></label>
+        <label>Cooldown (ms) <input type="number" id="bldr-cooldown" value="1000" min="0"></label>
+      </div>
+
+      <!-- Trigger -->
+      <div class="bldr-section">
+        <span>⚡ Trigger — what starts this scene</span>
+        <select id="bldr-trigger-type" onchange="bldrRenderTrigger()" style="padding:2px 6px;font-size:11px;background:var(--raised);border:1px solid var(--border);color:var(--text);border-radius:var(--radius-sm)">
+          <option value="gpio_changed">GPIO Input</option>
+          <option value="operator_trigger">Operator Button</option>
+        </select>
+      </div>
+      <div id="bldr-trigger-block"></div>
+
+      <!-- Steps -->
+      <div class="bldr-section" style="margin-top:12px">
+        <span>↓ Steps — run in order</span>
+      </div>
+      <div id="bldr-steps" style="display:flex;flex-direction:column;gap:6px"></div>
+      <button class="bldr-add-btn" style="margin-top:8px" onclick="bldrShowPicker(this)">+ Add Step</button>
+      <div id="bldr-picker" style="display:none;margin-top:6px"></div>
+    </div>
+
+  </div><!-- /panel-routines -->
+
+  <!-- ─ MANUAL ────────────────────────────────────────────────────────── -->
+  <div class="panel" id="panel-manual">
+
+    <!-- Fixture control -->
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div class="card-title" style="margin:0"><span class="ct-icon">💡</span>Fixture Control</div>
+        <button class="btn-danger btn-sm" onclick="manualBlackout()">Blackout All</button>
+      </div>
+      <div id="manual-fixture-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px">
+        <div style="color:var(--muted);font-size:12px;grid-column:1/-1">Load the Setup tab first to configure fixtures.</div>
+      </div>
+    </div>
+
+    <!-- Raw channel (advanced) -->
+    <details>
+      <summary style="font-size:11px;color:var(--muted);cursor:pointer;user-select:none;padding:4px 0">Advanced: raw DMX channel</summary>
+      <div class="card" style="margin-top:6px">
+        <div class="flex-col">
+          <div class="form-row">
+            <label class="form-label">Universe</label>
+            <select id="manual-universe"></select>
+          </div>
+          <div class="form-row">
+            <label class="form-label">Channel (1–512)</label>
+            <input type="number" id="manual-ch" min="1" max="512" value="1">
+          </div>
+          <div class="form-row">
+            <label class="form-label">Value (0–255)</label>
+            <div class="slider-row">
+              <input type="range" id="manual-slider" min="0" max="255" value="0"
+                oninput="$('manual-val').textContent=this.value">
+              <span class="slider-val" id="manual-val">0</span>
+            </div>
+          </div>
+          <button onclick="setManualChannel()">Set Channel</button>
+          <div class="msg" id="manual-msg"></div>
+        </div>
+      </div>
+    </details>
+
+  </div><!-- /panel-manual -->
+
+</div><!-- /main -->
+
+<script>
+"use strict";
+
+// ── Constants ────────────────────────────────────────────────────────────────
+
+const STATE_INFO = {
+  BOOTING:        {desc:'System is starting up — hardware initializing. Wait for SAFE.',
+                   hint:'No action needed. The system will transition to SAFE automatically when ready.',
+                   cls:'sp-BOOTING'},
+  SAFE:           {desc:'System idle. The cue engine is paused — nothing will fire.',
+                   hint:'DMX outputs hold their last values. Use this when the show is not running. Click READY when you\'re ready to arm.',
+                   cls:'sp-SAFE'},
+  READY:          {desc:'System armed. All hardware is active. Cues will fire once you click RUNNING.',
+                   hint:'The engine is not yet processing triggers. Use this state to verify hardware before starting the show.',
+                   cls:'sp-READY'},
+  RUNNING:        {desc:'Show is live. The cue engine is active and responding to GPIO inputs and operator triggers.',
+                   hint:'Scenes will fire automatically when their trigger conditions are met. Use PAUSED to freeze without losing DMX output.',
+                   cls:'sp-RUNNING'},
+  PAUSED:         {desc:'Show paused. DMX outputs are frozen at their current values. No cues will fire.',
+                   hint:'Resume with RUNNING, or drop to SAFE to go dark. Useful for holding a look during a show pause.',
+                   cls:'sp-PAUSED'},
+  EMERGENCY_STOP: {desc:'EMERGENCY STOP — all show activity halted immediately.',
+                   hint:'All cues have been cancelled. Reset to SAFE when it is safe to do so. Hardware outputs hold their last state.',
+                   cls:'sp-EMERGENCY_STOP'},
+  FAULT:          {desc:'System fault detected. Check the event log for details.',
+                   hint:'Something went wrong during operation. Review the log on the Live tab, resolve the issue, then reset to SAFE.',
+                   cls:'sp-FAULT'},
+};
+
+const TRANSITION_CLS = {RUNNING:'btn-primary',READY:'btn-primary',EMERGENCY_STOP:'btn-danger'};
+
+const ACTION_LABEL = {
+  set_dmx_scene:  p=>`DMX → <b>${p.scene}</b>`,
+  fade_dmx_scene: p=>`Fade → <b>${p.scene}</b> (${p.duration_ms}ms)`,
+  dmx_flash:      p=>`Flash <b>${p.scene}</b> ×${p.count??3}`,
+  set_relay:      p=>`Relay <b>${p.relay}</b> → ${p.state}`,
+  pixel_scene:    p=>`Pixels fill rgb(${(p.color||[0,0,0]).join(',')})`,
+  pixel_chase:    p=>`Pixel chase ${p.duration_ms??2000}ms`,
+  pixel_off:      ()=>`Pixels off`,
+  wait:           p=>`Wait ${p.duration_ms}ms`,
+  blackout:       ()=>`All Off`,
+  parallel:       p=>`${(p.actions||[]).length} tracks`,
+  group_color:    p=>`Group ${p.group} → rgb(${(p.color||[]).join(',')})`,
+  group_flash:    p=>`Group ${p.group} ×${p.count||15} (${(p.colors||[]).length} colors)`,
+  group_chase:    p=>`Group ${p.group} chase ${p.duration_ms||2000}ms`,
+  group_effect:   p=>`Group ${p.group} ${p.effect||'flash'}`,
+  set_fixture:    p=>`${p.fixture||p.group||'?'} → ${Object.keys(p.channels||{}).join(',')||'channels'}`,
+};
+
+// RPi 40-pin header: [physicalPin, bcmNum|null, label, type]
+// types: pw5=5V rail, pw33=3.3V rail, gnd=ground, gpio=general, pwm=hardware PWM
+const RPI_PINS = [
+  [1,'','3V3','pw33'], [2,'','5V','pw5'],
+  [3,2,'SDA','gpio'], [4,'','5V','pw5'],
+  [5,3,'SCL','gpio'], [6,'','GND','gnd'],
+  [7,4,'GPIO4','gpio'],[8,14,'TXD','gpio'],
+  [9,'','GND','gnd'], [10,15,'RXD','gpio'],
+  [11,17,'GPIO17','gpio'],[12,18,'GPIO18','gpio'],
+  [13,27,'GPIO27','gpio'],[14,'','GND','gnd'],
+  [15,22,'GPIO22','gpio'],[16,23,'GPIO23','gpio'],
+  [17,'','3V3','pw33'], [18,24,'GPIO24','gpio'],
+  [19,10,'MOSI','gpio'],[20,'','GND','gnd'],
+  [21,9,'MISO','gpio'], [22,25,'GPIO25','gpio'],
+  [23,11,'SCLK','gpio'],[24,8,'CE0','gpio'],
+  [25,'','GND','gnd'], [26,7,'CE1','gpio'],
+  [27,0,'SDA0','gpio'],[28,1,'SCL0','gpio'],
+  [29,5,'GPIO5','gpio'],[30,'','GND','gnd'],
+  [31,6,'GPIO6','gpio'],[32,12,'GPIO12','pwm'],
+  [33,13,'GPIO13','pwm'],[34,'','GND','gnd'],
+  [35,19,'GPIO19','gpio'],[36,16,'GPIO16','gpio'],
+  [37,26,'GPIO26','gpio'],[38,20,'GPIO20','gpio'],
+  [39,'','GND','gnd'], [40,21,'GPIO21','gpio'],
+];
+
+// ── State ────────────────────────────────────────────────────────────────────
+let snap = {};
+let gpioLogical = {}, gpioPhysical = {};
+let cues = [];
+let knownScenes = [];
+let showFull = {};
+let logEntries = [];
+let pxCount = 0;
+let ws, wsOk = false, pollTimer;
+let activeCueSnapshot = null;
+// Setup tab state
+let setupData = {fixtures:[], fixture_groups:[], gpio_inputs:[], relay_outputs:[]};
+let setupProfiles = [];
+let setupEditGroupIdx = null;
+let setupEditFixtureIdx = null, setupEditGPIOIdx = null, setupEditRelayIdx = null;
+
+// ── DOM ──────────────────────────────────────────────────────────────────────
+function $(id){return document.getElementById(id)}
+
+function flash(el,msg,ok){
+  if(!el) return;
+  el.textContent=msg; el.className='msg '+(ok?'ok':'err');
+  setTimeout(()=>{el.textContent='';el.className='msg'},3000);
+}
+
+// ── Tabs ─────────────────────────────────────────────────────────────────────
+document.querySelectorAll('.tab').forEach(t=>{
+  t.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    $('panel-'+t.dataset.tab).classList.add('active');
+    if(t.dataset.tab==='manual'){
+      if(setupData.fixtures.length) manualRender(); else setupLoad();
+    }
+  });
+});
+
+// ── Apply state snapshot ──────────────────────────────────────────────────────
+function applySnapshot(data){
+  snap = data;
+  gpioLogical  = data.gpio         || {};
+  gpioPhysical = data.gpio_physical|| {};
+
+  const st = data.system_state;
+  const info = STATE_INFO[st] || {};
+
+  // Header pill
+  const pill = $('state-pill');
+  pill.textContent = st.replace('_',' ');
+  pill.className = 'state-pill '+(info.cls||'');
+
+  // State info bar
+  const sib = $('state-info-bar');
+  const sibDesc = $('sib-desc');
+  const sibHint = $('sib-hint');
+  if(sib){
+    sib.className = st==='EMERGENCY_STOP'?'sib-estop':st==='RUNNING'?'sib-running':'';
+  }
+  if(sibDesc) sibDesc.textContent = info.desc||'';
+  if(sibHint) sibHint.textContent = info.hint||'';
+
+  // Armed
+  const at = $('armed-tag');
+  at.textContent = data.armed ? 'ARMED' : 'DISARMED';
+  at.className = 'armed-tag'+(data.armed?' yes':'');
+
+  // Engine dot (green = running a cue)
+  $('eng-dot').style.background = data.engine?.active_cue ? 'var(--orange)' : 'var(--green)';
+
+  // Transitions
+  const valid = data.valid_transitions||[];
+  const row = $('state-transitions');
+  const newHTML = valid.map(t=>`<button class="${TRANSITION_CLS[t]||''} btn-sm" onclick="setState('${t}')">${t.replace('_',' ')}</button>`).join('');
+  if(row.innerHTML!==newHTML) row.innerHTML=newHTML;
+
+  // Live tab: sim state banner
+  updateSimBanner(st, valid);
+
+  // Routine progress
+  renderProgress(data.engine||{}, cues);
+
+  // Pixels
+  renderPixels(data.pixels||[]);
+
+  // Relays (both cards)
+  renderRelays(data.relays||{});
+
+  // DMX
+  renderDMX(data.universes||{});
+
+  // Universe selector
+  const sel = $('manual-universe');
+  const uids = Object.keys(data.universes||{});
+  if(sel.options.length!==uids.length){
+    sel.innerHTML='';
+    uids.forEach(u=>{const o=document.createElement('option');o.value=u;o.textContent='Universe '+u;sel.appendChild(o)});
+  }
+
+  // Scenes (only rebuild if changed)
+  const scenes = data.scenes||[];
+  if(JSON.stringify(scenes)!==JSON.stringify(knownScenes)) knownScenes=scenes;
+
+  // GPIO sim buttons
+  renderGPIOSim();
+
+  // Float fixture visualization
+  renderFixtureViz(data.universes||{});
+
+  // Keep flag dropdown options current
+  updateFlagSelect();
+}
+
+// ── Routine progress ──────────────────────────────────────────────────────────
+function renderProgress(eng, loadedCues){
+  const idle  = $('prog-idle');
+  const active= $('prog-active');
+  if(!eng.active_cue){
+    idle.style.display='';active.style.display='none';
+    activeCueSnapshot=null;
+    return;
+  }
+  idle.style.display='none';active.style.display='';
+  $('prog-cue-name').textContent=eng.active_cue;
+  $('prog-step-label').textContent=`step ${eng.active_step} / ${eng.total_steps}`;
+  const pct = eng.total_steps>0?Math.round(eng.active_step/eng.total_steps*100):0;
+  const bar = $('prog-bar');
+  bar.style.width=pct+'%';
+  bar.className='prog-fill running';
+
+  // Step list from loaded cues
+  const cue = loadedCues.find(c=>c.id===eng.active_cue);
+  if(cue){
+    const steps = cue.actions;
+    $('step-list').innerHTML=steps.map((a,i)=>{
+      const idx=i+1;
+      let cls='pending', numCls='';
+      if(idx<eng.active_step){cls='done';numCls='done'}
+      else if(idx===eng.active_step){cls='active';numCls='active'}
+      const lbl=ACTION_LABEL[a.type]?ACTION_LABEL[a.type](a):`<b>${a.type}</b>`;
+      return `<div class="step-row ${cls}">
+        <div class="step-num ${numCls}">${numCls==='done'?'✓':idx}</div>
+        <span>${lbl}</span>
+      </div>`;
+    }).join('');
+  }
+}
+
+// ── Event log ──────────────────────────────────────────────────────────────────
+function applyLogEntries(entries){
+  entries.forEach(e=>logEntries.push(e));
+  if(logEntries.length>200) logEntries=logEntries.slice(-200);
+  renderLog();
+}
+
+function renderLog(){
+  const el=$('log-entries');
+  if(logEntries.length===0){el.innerHTML='<div class="empty">No events yet.</div>';return}
+  const rows=logEntries.slice().reverse().map(e=>{
+    const d=new Date(e.ts);
+    const t=d.toTimeString().slice(0,8)+'.'+String(d.getMilliseconds()).padStart(3,'0');
+    return `<div class="log-row">
+      <span class="log-time">${t}</span>
+      <span class="log-tag tag-${e.tag}">${e.tag}</span>
+      <span class="log-msg">${e.msg}</span>
+    </div>`;
+  }).join('');
+  el.innerHTML=rows;
+}
+
+function clearLog(){logEntries=[];renderLog()}
+
+// ── Pixels ────────────────────────────────────────────────────────────────────
+function renderPixels(pixels){
+  const strip=$('pixel-strip');
+  const ce=$('pixel-count');
+  if(!pixels.length){strip.innerHTML='<span class="empty">No pixel strip configured.</span>';ce.textContent='';return}
+  ce.textContent=`${pixels.length} px`;
+  if(pixels.length!==pxCount){
+    pxCount=pixels.length;
+    strip.innerHTML=pixels.map((_,i)=>`<div class="px" id="px${i}"></div>`).join('');
+  }
+  pixels.forEach(([r,g,b],i)=>{
+    const el=document.getElementById('px'+i);
+    if(!el)return;
+    const bg=(r||g||b)?`rgb(${r},${g},${b})`:'#dde0ec';
+    if(el.style.background!==bg) el.style.background=bg;
+  });
+}
+
+// ── Relays ────────────────────────────────────────────────────────────────────
+function renderRelays(relays){
+  const entries=Object.entries(relays);
+  const liveHTML=entries.map(([id,on])=>`
+    <div class="relay-row">
+      <div class="relay-indicator ${on?'on':''}"></div>
+      <span class="relay-name">${id}</span>
+      <span class="relay-status" style="color:${on?'var(--green)':'var(--muted)'}">${on?'ON':'off'}</span>
+    </div>`).join('') || '<div class="empty">No relays configured.</div>';
+  // Live tab relay card
+  const gl=$('relay-grid-live'); if(gl) gl.innerHTML=liveHTML;
+  // Hardware tab relay card
+  const gh=$('relay-grid-hw');   if(gh) gh.innerHTML=liveHTML;
+
+  // Sim buttons (relay overrides)
+  const sb=$('relay-sim-btns');
+  if(sb){
+    sb.innerHTML=entries.map(([id,on])=>
+      `<button class="btn-sm ${on?'btn-primary':''}" onclick="toggleRelay('${id}',${!on})">${id}: ${on?'ON':'off'}</button>`
+    ).join('') || '<span class="empty">None</span>';
+  }
+}
+
+// ── Float fixture visualization ───────────────────────────────────────────────
+
+function _fvizDmxVal(fixture, profile, channelName, universes){
+  const offset = (profile?.channels||{})[channelName];
+  if(!offset) return 0;
+  const uData = universes[String(fixture.universe)]||{};
+  return uData[String(fixture.address + offset - 1)]||0;
+}
+
+function _fvizRgb(fixture, profile, universes){
+  const r = _fvizDmxVal(fixture,profile,'red',universes);
+  const g = _fvizDmxVal(fixture,profile,'green',universes);
+  const b = _fvizDmxVal(fixture,profile,'blue',universes);
+  const w = _fvizDmxVal(fixture,profile,'white',universes);
+  const a = _fvizDmxVal(fixture,profile,'amber',universes);
+  return [
+    Math.min(255, r + Math.round(w*.9) + a),
+    Math.min(255, g + Math.round(w*.9) + Math.round(a*.5)),
+    Math.min(255, b + Math.round(w*.9)),
+  ];
+}
+
+function _fvizSwatchHtml(f, prof, universes){
+  const chs = prof?.channels||{};
+  const hasRgb = ['red','green','blue'].every(c=>c in chs);
+  if(hasRgb){
+    const [r,g,b] = _fvizRgb(f,prof,universes);
+    const lit = (r+g+b)>0;
+    const bg = lit ? `rgb(${r},${g},${b})` : 'var(--raised)';
+    const border = lit ? `rgba(${r},${g},${b},.4)` : 'var(--border)';
+    const num = f.id.match(/(\d+)$/)?.[1]||f.id;
+    return `<div class="fviz-fixture" title="${f.name}">
+      <div class="fviz-swatch" style="background:${bg};border-color:${border}${lit?`;box-shadow:0 0 8px rgba(${r},${g},${b},.5)`:``}"></div>
+      <div class="fviz-label">${num}</div>
+    </div>`;
+  }
+  // Non-RGB: horizontal intensity bars
+  const bars = Object.entries(chs).map(([name,offset])=>{
+    const val = (universes[String(f.universe)]||{})[String(f.address+offset-1)]||0;
+    const pct = Math.round(val/255*100);
+    const color = name==='intensity'?'var(--orange)':name==='haze'?'var(--teal)':'var(--blue)';
+    return `<div class="fviz-bar-fixture">
+      <div class="fviz-bar-name">${f.name} — ${name}</div>
+      <div class="fviz-bar-track"><div class="fviz-bar-fill" style="width:${pct}%;background:${color}"></div></div>
+      <div class="fviz-bar-pct">${pct}%</div>
+    </div>`;
+  }).join('');
+  return `<div style="width:100%">${bars}</div>`;
+}
+
+function renderFixtureViz(universes){
+  const el=$('fixture-viz-grid');
+  if(!el) return;
+  const fixtures = hwConfig.fixtures||[];
+  if(!fixtures.length){el.innerHTML='<span class="empty">No fixtures configured.</span>';return;}
+
+  // Build group membership lookup
+  const groups = hwConfig.fixture_groups||[];
+  const inGroup={};
+  groups.forEach(g=>g.fixture_ids.forEach(fid=>{inGroup[fid]=g}));
+
+  // Bucket fixtures by profile
+  const byProfile=new Map();
+  fixtures.forEach(f=>{
+    if(!byProfile.has(f.profile)) byProfile.set(f.profile,[]);
+    byProfile.get(f.profile).push(f);
+  });
+
+  let html='';
+  byProfile.forEach((pfixtures,profileId)=>{
+    const prof=setupProfiles.find(p=>p.id===profileId);
+    const chs=prof?.channels||{};
+    const hasRgb=['red','green','blue'].every(c=>c in chs);
+    const sectionTitle=(prof?.name||profileId).replace(/\s*\(.*\)/,'');
+
+    // Relevant groups (only those containing fixtures of this profile)
+    const relevantGroups=groups.filter(g=>g.fixture_ids.some(fid=>pfixtures.find(f=>f.id===fid)));
+    const groupedIds=new Set(relevantGroups.flatMap(g=>g.fixture_ids));
+    const ungrouped=pfixtures.filter(f=>!groupedIds.has(f.id));
+
+    html+=`<div class="fviz-section"><div class="fviz-section-title">${sectionTitle}</div>`;
+
+    if(hasRgb && relevantGroups.length){
+      html+=`<div class="fviz-groups">`;
+      relevantGroups.forEach(g=>{
+        const gf=g.fixture_ids.map(fid=>pfixtures.find(f=>f.id===fid)).filter(Boolean);
+        html+=`<div class="fviz-group"><div class="fviz-group-title">${g.name}</div><div class="fviz-fixtures">`;
+        gf.forEach(f=>{ html+=_fvizSwatchHtml(f,prof,universes); });
+        html+=`</div></div>`;
+      });
+      html+=`</div>`;
+    }
+
+    // Ungrouped fixtures — rendered once (covers all non-RGB fixtures and any RGB not in a group)
+    if(ungrouped.length){
+      if(hasRgb){
+        html+=`<div class="fviz-fixtures" style="margin-top:${relevantGroups.length?'6px':'0'}">`;
+        ungrouped.forEach(f=>{ html+=_fvizSwatchHtml(f,prof,universes); });
+        html+=`</div>`;
+      } else {
+        ungrouped.forEach(f=>{ html+=_fvizSwatchHtml(f,prof,universes); });
+      }
+    }
+    html+=`</div>`;
+  });
+
+  if(el.innerHTML!==html) el.innerHTML=html;
+}
+
+// ── GPIO sim buttons ──────────────────────────────────────────────────────────
+function renderGPIOSim(){
+  const el=$('gpio-sim-btns');
+  const pins=Object.keys(gpioLogical);
+  if(!pins.length){el.innerHTML='<span class="empty">No GPIO configured.</span>';return}
+  const newHTML=pins.map(pin=>{
+    const active=gpioLogical[pin];
+    const phys=gpioPhysical[pin]??!active;
+    // Two buttons per pin: hold toggle + momentary pulse
+    return `<span style="display:inline-flex;gap:2px;align-items:center">
+      <button class="btn-sm ${active?'btn-primary':''}" onclick="toggleGPIO('${pin}',${!phys})" title="Hold toggle">${pin}: ${active?'ACTIVE':'idle'}</button>
+      <button class="btn-sm" onclick="pulseGPIO('${pin}')" title="Momentary pulse (active → idle after 200ms)" style="padding:2px 6px">⚡</button>
+    </span>`;
+  }).join('');
+  if(el.innerHTML!==newHTML) el.innerHTML=newHTML;
+}
+
+// ── RPi pin map ───────────────────────────────────────────────────────────────
+function buildRPiPins(config){
+  // Build lookup: bcmNum -> role info
+  const pinRoles={};
+  (config.gpio_inputs||[]).forEach(g=>{
+    pinRoles[g.pin]={role:'input',id:g.id,state:gpioLogical[g.id]};
+  });
+  (config.relay_outputs||[]).forEach(r=>{
+    pinRoles[r.pin]={role:'relay',id:r.id,state:(snap.relays||{})[r.id]};
+  });
+  (config.pixel_strips||[]).forEach(s=>{
+    pinRoles[s.pin]={role:'pwm',id:s.id};
+  });
+
+  const rows=[];
+  for(let i=0;i<RPI_PINS.length;i+=2){
+    const L=RPI_PINS[i], R=RPI_PINS[i+1];
+    rows.push(`<div class="pin-row">${pinCell(L,pinRoles)} <span class="pin-divider">│</span> ${pinCell(R,pinRoles)}</div>`);
+  }
+  $('rpi-pins').innerHTML=rows.join('');
+}
+
+function pinCell([phys,bcm,label,type],roles){
+  const role=roles[bcm];
+  let dotCls,cellCls='',title=`Physical ${phys}${bcm!==''?' / BCM '+bcm:''}`,extraBtn='';
+  if(type==='pw5'){dotCls='pw';title='5V'}
+  else if(type==='pw33'){dotCls='v33';title='3.3V'}
+  else if(type==='gnd'){dotCls='gnd';title='GND'}
+  else if(role?.role==='input'){
+    dotCls=role.state?'gpio-active':'gpio-idle';
+    cellCls='clickable';
+    title=`GPIO${bcm} — input: ${role.id} (${role.state?'ACTIVE':'idle'})`;
+    extraBtn=`onclick="toggleGPIOByBCM(${bcm})"`;
+  } else if(role?.role==='relay'){
+    dotCls='gpio-out';
+    title=`GPIO${bcm} — relay: ${role.id} (${role.state?'ON':'off'})`;
+  } else if(role?.role==='pwm'){
+    dotCls='gpio-pwm';
+    title=`GPIO${bcm} — PWM: ${role.id}`;
+  } else {
+    dotCls='gpio-idle';
+  }
+  const lbl=role?role.id:label;
+  return `<div class="pin-cell ${cellCls}" title="${title}" ${extraBtn}>
+    <div class="pin-dot ${dotCls}"></div>
+    <span class="pin-label">${lbl}</span>
+    <span class="pin-num">${phys}</span>
+  </div>`;
+}
+
+function toggleGPIOByBCM(bcm){
+  const entry=RPI_PINS.find(([,b])=>b===bcm);
+  if(!entry)return;
+  const config=(snap._config||{});
+  const gpio=(config.gpio_inputs||[]).find(g=>g.pin===bcm);
+  if(!gpio)return;
+  const active=gpioLogical[gpio.id];
+  const phys=gpioPhysical[gpio.id]??!active;
+  toggleGPIO(gpio.id,!phys);
+}
+
+// ── DMX ────────────────────────────────────────────────────────────────────────
+function renderDMX(universes){
+  const el=$('dmx-universes');
+  if(!Object.keys(universes).length){el.innerHTML='<div class="empty">No universes.</div>';return}
+  el.innerHTML=Object.entries(universes).map(([uid,chs])=>{
+    const ch=Object.entries(chs).map(([c,v])=>({c:+c,v})).filter(x=>x.v>0||showFull[uid]);
+    const rows=ch.map(({c,v})=>`<tr>
+      <td>${c}</td>
+      <td><div class="bar-bg"><div class="bar-fill" style="width:${Math.round(v/255*100)}%"></div></div></td>
+      <td><span class="val-num">${v}</span></td>
+    </tr>`).join('');
+    const allCh=Object.entries(chs);
+    return `<div style="margin-bottom:10px">
+      <div style="font-size:10px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px">Universe ${uid}</div>
+      ${ch.length?`<table class="dmx-table"><thead><tr><th>Ch</th><th>Level</th><th>Val</th></tr></thead><tbody>${rows}</tbody></table>`:'<div class="empty">All channels zero.</div>'}
+      ${allCh.length>0?`<button style="font-size:10px;color:var(--blue);background:none;border:none;padding:2px 0;cursor:pointer;margin-top:4px" onclick="toggleFull('${uid}')">${showFull[uid]?'Show active only':'Show all '+allCh.length+' channels'}</button>`:''}
+    </div>`;
+  }).join('');
+}
+
+function toggleFull(uid){showFull[uid]=!showFull[uid];renderDMX(snap.universes||{})}
+
+// ── Cues ──────────────────────────────────────────────────────────────────────
+function renderCues(data){
+  cues=data;
+  updateFlagSelect();
+  const grid=$('cue-grid');
+  const opBtns=$('op-trigger-btns');
+  if(!data.length){
+    grid.innerHTML='<div class="empty">No cues loaded.</div>';
+    opBtns.innerHTML='<span class="empty">None.</span>';
+    return;
+  }
+  const opCues=[];
+  grid.innerHTML=data.map(cue=>{
+    const isOp=cue.trigger.event==='operator_trigger';
+    const tid=isOp?extractTid(cue.trigger.condition):null;
+    if(isOp&&tid) opCues.push({tid,label:cue.description||cue.id});
+    const acts=cue.actions.map(a=>{
+      const fn=ACTION_LABEL[a.type];
+      return `<li>${fn?fn(a):`<b>${a.type}</b>`}</li>`;
+    }).join('');
+    return `<div class="cue-card">
+      <div class="cue-id">${cue.id}</div>
+      ${cue.description?`<div class="cue-desc">${cue.description}</div>`:''}
+      <div class="cue-section">Trigger</div>
+      <div class="cue-trigger">${cue.trigger.event}${cue.trigger.condition?`<br><span style="color:var(--muted)">${cue.trigger.condition}</span>`:''}
+      </div>
+      <div class="cue-section">Actions</div>
+      <ul class="cue-actions">${acts}</ul>
+      <div class="cue-footer">
+        <span class="cue-meta">cooldown ${cue.cooldown_ms}ms · priority ${cue.priority}</span>
+        ${isOp&&tid?`<button class="btn-sm btn-fire" onclick="fireTrigger('${tid}')">▶ Fire</button>`:''}
+      </div>
+    </div>`;
+  }).join('');
+
+  opBtns.innerHTML=opCues.map(c=>
+    `<button class="btn-sm btn-fire" onclick="fireTrigger('${c.tid}')" title="${c.label}">▶ ${c.tid}</button>`
+  ).join('') || '<span class="empty">No operator trigger cues.</span>';
+
+  renderLiveCueSummary(cues);
+}
+
+function extractTid(cond){
+  if(!cond)return null;
+  const m=cond.match(/event\.trigger_id\s*==\s*['"]([^'"]+)['"]/);
+  return m?m[1]:null;
+}
+
+// ── API ───────────────────────────────────────────────────────────────────────
+async function api(method,path,body){
+  const opts={method,headers:{'Content-Type':'application/json'}};
+  if(body!==undefined) opts.body=JSON.stringify(body);
+  const r=await fetch(path,opts);
+  return r.json();
+}
+
+async function setState(s){
+  try{
+    const r=await api('POST',`/api/state/${s}`);
+    if(r.ok) flash($('state-msg'),`→ ${r.new_state}`,true);
+    else flash($('state-msg'),r.detail||'Transition failed',false);
+  }catch(e){flash($('state-msg'),e.message,false)}
+}
+
+async function setManualChannel(){
+  const uid=parseInt($('manual-universe').value);
+  const ch=parseInt($('manual-ch').value);
+  const val=parseInt($('manual-slider').value);
+  if(isNaN(uid)||isNaN(ch)||isNaN(val)){flash($('manual-msg'),'Invalid input',false);return}
+  try{const r=await api('POST',`/api/dmx/universes/${uid}/channels`,{channels:{[ch]:val}});flash($('manual-msg'),r.ok?`Ch ${ch} = ${val}`:r.detail,r.ok)}
+  catch(e){flash($('manual-msg'),e.message,false)}
+}
+
+// ── Manual fixture control ────────────────────────────────────────────────
+
+function manualRender(){
+  const grid=$('manual-fixture-grid');
+  if(!grid) return;
+  const fixtures=setupData.fixtures||[];
+  if(!fixtures.length){
+    grid.innerHTML='<div style="color:var(--muted);font-size:12px;grid-column:1/-1">No fixtures configured. Add fixtures in the Setup tab.</div>';
+    return;
+  }
+  grid.innerHTML=fixtures.map(f=>{
+    const prof=setupProfiles.find(p=>p.id===f.profile);
+    const chs=prof?Object.entries(prof.channels).sort((a,b)=>a[1]-b[1]):[];
+    const hasRGB=prof&&['red','green','blue'].every(c=>c in (prof.channels||{}));
+    const colorRow=hasRGB?`
+      <div style="margin-bottom:10px">
+        <div style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px">Color</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <input type="color" value="#000000" id="mfx-color-${f.id}"
+            oninput="manualSetColor('${f.id}',this.value)"
+            style="width:48px;height:34px;border-radius:6px;border:1px solid var(--border);cursor:pointer;padding:2px;background:none">
+          <span style="font-size:11px;color:var(--muted);font-family:monospace" id="mfx-hex-${f.id}">#000000</span>
+        </div>
+      </div>`:''
+    const sliders=chs.map(([name,offset])=>`
+      <div style="margin-bottom:7px">
+        <div style="display:flex;justify-content:space-between;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;margin-bottom:2px">
+          <span>${name}</span><span id="mfx-val-${f.id}-${name}">0</span>
+        </div>
+        <input type="range" min="0" max="255" value="0" id="mfx-sl-${f.id}-${name}"
+          oninput="manualSetCh('${f.id}',${f.universe},'${name}',${offset},${f.address},+this.value)"
+          style="width:100%;accent-color:var(--blue)">
+      </div>`).join('');
+    return `<div style="border:1px solid var(--border);border-radius:var(--radius);padding:12px;background:var(--card);box-shadow:var(--shadow-sm)">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px">
+        <div>
+          <div style="font-weight:600;font-size:13px">${f.name}</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:1px">${f.profile} · U${f.universe}@${f.address}</div>
+        </div>
+        <button class="btn-sm" style="flex-shrink:0;margin-left:8px" onclick="manualFixtureOff('${f.id}')">Off</button>
+      </div>
+      ${colorRow}${sliders}
+    </div>`;
+  }).join('');
+}
+
+async function manualSetCh(fid,universe,name,offset,address,val){
+  const dmxCh=address+offset-1;
+  const el=$(`mfx-val-${fid}-${name}`);
+  if(el) el.textContent=val;
+  if(['red','green','blue'].includes(name)) manualUpdateColorSwatch(fid);
+  try{await api('POST',`/api/dmx/universes/${universe}/channels`,{channels:{[dmxCh]:val}})}
+  catch(e){console.error(e)}
+}
+
+function manualUpdateColorSwatch(fid){
+  const f=setupData.fixtures.find(x=>x.id===fid);
+  const prof=setupProfiles.find(p=>p.id===f?.profile);
+  if(!prof) return;
+  const r=parseInt($(`mfx-sl-${fid}-red`)?.value||0);
+  const g=parseInt($(`mfx-sl-${fid}-green`)?.value||0);
+  const b=parseInt($(`mfx-sl-${fid}-blue`)?.value||0);
+  const hex='#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('');
+  const picker=$(`mfx-color-${fid}`);
+  const hexSpan=$(`mfx-hex-${fid}`);
+  if(picker) picker.value=hex;
+  if(hexSpan) hexSpan.textContent=hex;
+}
+
+async function manualSetColor(fid,hex){
+  const r=parseInt(hex.slice(1,3),16);
+  const g=parseInt(hex.slice(3,5),16);
+  const b=parseInt(hex.slice(5,7),16);
+  const hexSpan=$(`mfx-hex-${fid}`);
+  if(hexSpan) hexSpan.textContent=hex;
+  const f=setupData.fixtures.find(x=>x.id===fid);
+  const prof=setupProfiles.find(p=>p.id===f?.profile);
+  if(!f||!prof) return;
+  const channels={};
+  const setSlider=(name,val)=>{
+    const sl=$(`mfx-sl-${fid}-${name}`);
+    const vl=$(`mfx-val-${fid}-${name}`);
+    if(sl){sl.value=val;}
+    if(vl) vl.textContent=val;
+    if(prof.channels[name]!=null) channels[f.address+prof.channels[name]-1]=val;
+  };
+  setSlider('red',r);setSlider('green',g);setSlider('blue',b);
+  try{await api('POST',`/api/dmx/universes/${f.universe}/channels`,{channels})}
+  catch(e){console.error(e)}
+}
+
+async function manualFixtureOff(fid){
+  const f=setupData.fixtures.find(x=>x.id===fid);
+  const prof=setupProfiles.find(p=>p.id===f?.profile);
+  if(!f||!prof) return;
+  const channels={};
+  Object.entries(prof.channels).forEach(([name,offset])=>{
+    channels[f.address+offset-1]=0;
+    const sl=$(`mfx-sl-${fid}-${name}`);
+    const vl=$(`mfx-val-${fid}-${name}`);
+    if(sl) sl.value=0;
+    if(vl) vl.textContent=0;
+  });
+  const picker=$(`mfx-color-${fid}`);
+  const hexSpan=$(`mfx-hex-${fid}`);
+  if(picker) picker.value='#000000';
+  if(hexSpan) hexSpan.textContent='#000000';
+  try{await api('POST',`/api/dmx/universes/${f.universe}/channels`,{channels})}
+  catch(e){console.error(e)}
+}
+
+async function manualBlackout(){
+  try{await api('POST','/api/dmx/blackout')}
+  catch(e){console.error(e)}
+  // Zero all sliders
+  (setupData.fixtures||[]).forEach(f=>manualFixtureOff(f.id));
+}
+
+// ── Live tab summary helpers ──────────────────────────────────────────────────
+
+function extractPinId(cond){
+  if(!cond) return null;
+  const m=cond.match(/event\.pin_id\s*==\s*['"]([^'"]+)['"]/);
+  return m?m[1]:null;
+}
+
+function renderLiveCueSummary(cueList){
+  const el=$('live-cue-summary');
+  if(!el) return;
+  if(!cueList.length){el.innerHTML='<span class="empty">No routines loaded.</span>';return;}
+  el.innerHTML=cueList.map(cue=>{
+    const ev=cue.trigger.event;
+    const cond=cue.trigger.condition||'';
+    let trigLabel;
+    if(ev==='gpio_changed'){
+      const pin=extractPinId(cond);
+      trigLabel=pin?`GPIO: <b>${pin}</b>`:`GPIO input`;
+    } else if(ev==='operator_trigger'){
+      const tid=extractTid(cond);
+      trigLabel=tid?`Operator: <b>${tid}</b>`:`Operator trigger`;
+    } else {
+      trigLabel=`<b>${ev}</b>`;
+    }
+    const acts=cue.actions.map(a=>{const fn=ACTION_LABEL[a.type];return fn?fn(a):`<b>${a.type}</b>`;});
+    const actSummary=acts.slice(0,3).join(' · ')+(cue.actions.length>3?` +${cue.actions.length-3} more`:'');
+    const isOp=ev==='operator_trigger';
+    const tid=isOp?extractTid(cond):null;
+    const fireBtn=isOp&&tid?`<button class="btn-sm btn-fire" onclick="fireTrigger('${tid}')" style="flex-shrink:0">▶ Fire</button>`:'';
+    return `<div style="display:flex;align-items:center;gap:10px;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px">
+      <span style="font-weight:600;min-width:130px;flex-shrink:0">${cue.description||cue.id}</span>
+      <span style="color:var(--muted);min-width:150px;flex-shrink:0">${trigLabel}</span>
+      <span style="color:var(--muted);flex:1">${actSummary}</span>
+      ${fireBtn}
+    </div>`;
+  }).join('');
+}
+
+function updateSimBanner(state, validTransitions){
+  const banner=$('sim-state-banner');
+  if(!banner) return;
+  if(state==='RUNNING'){banner.style.display='none';return;}
+  banner.style.display='flex';
+  const bs=$('sim-banner-state');
+  if(bs) bs.textContent=state.replace(/_/g,' ');
+  const bb=$('sim-banner-btns');
+  if(bb){
+    const toward=['READY','RUNNING'].filter(t=>(validTransitions||[]).includes(t));
+    bb.innerHTML=toward.map(t=>`<button class="${TRANSITION_CLS[t]||''} btn-sm" onclick="setState('${t}')" style="font-size:11px">${t.replace(/_/g,' ')}</button>`).join('');
+  }
+}
+
+async function toggleGPIO(pin,phys){
+  try{
+    await api('POST',`/api/sim/gpio/${pin}`,{physical_state:phys});
+    flash($('trigger-msg'),`GPIO ${pin} → ${phys?'ACTIVE':'idle'}`,true);
+  }catch(e){flash($('trigger-msg'),e.message,false)}
+}
+
+async function pulseGPIO(pin){
+  if(gpioLogical[pin]) return; // already active, no-op
+  const restPhys = gpioPhysical[pin] ?? true;
+  try{
+    await api('POST',`/api/sim/gpio/${pin}`,{physical_state:!restPhys});
+    flash($('trigger-msg'),`Pulse: ${pin} ACTIVE`,true);
+    setTimeout(async()=>{
+      await api('POST',`/api/sim/gpio/${pin}`,{physical_state:restPhys});
+    }, 200);
+  }catch(e){flash($('trigger-msg'),e.message,false)}
+}
+
+async function toggleRelay(id,state){
+  try{const r=await api('POST',`/api/sim/relay/${id}`,{state});if(!r.ok)flash($('trigger-msg'),r.detail,false)}
+  catch(e){flash($('trigger-msg'),e.message,false)}
+}
+
+async function fireTrigger(tid){
+  try{const r=await api('POST','/api/sim/events',{event_type:tid,params:{}});flash($('trigger-msg'),r.ok?`Fired: ${tid}`:r.detail,r.ok)}
+  catch(e){flash($('trigger-msg'),e.message,false)}
+}
+
+async function injectEvent(){
+  const etype=$('inject-type').value.trim();
+  let params={};
+  try{params=JSON.parse($('inject-params').value||'{}')}
+  catch{flash($('inject-msg'),'Invalid JSON',false);return}
+  try{const r=await api('POST','/api/sim/events',{event_type:etype,params});flash($('inject-msg'),r.ok?`Sent: ${etype}`:r.detail,r.ok)}
+  catch(e){flash($('inject-msg'),e.message,false)}
+}
+
+// ── WebSocket / polling ───────────────────────────────────────────────────────
+function setConn(ok){
+  wsOk=ok;
+  $('conn-dot').className='conn-dot '+(ok?'ok':'err');
+  $('conn-label').textContent=ok?'live':'polling';
+}
+
+function connectWS(){
+  const proto=location.protocol==='https:'?'wss:':'ws:';
+  ws=new WebSocket(`${proto}//${location.host}/ws`);
+  ws.onopen=()=>{setConn(true);stopPoll()};
+  ws.onmessage=ev=>{
+    try{
+      const msg=JSON.parse(ev.data);
+      if(msg.type==='state'&&msg.data) applySnapshot(msg.data);
+      if(msg.type==='log'&&msg.entries) applyLogEntries(msg.entries);
+    }catch{}
+  };
+  ws.onerror=()=>setConn(false);
+  ws.onclose=()=>{setConn(false);startPoll();setTimeout(connectWS,3000)};
+}
+
+function startPoll(){
+  if(pollTimer)return;
+  pollTimer=setInterval(async()=>{
+    try{const r=await fetch('/api/state');applySnapshot(await r.json())}catch{}
+  },2000);
+}
+
+function stopPoll(){if(pollTimer){clearInterval(pollTimer);pollTimer=null}}
+
+// ══ BUILDER ══════════════════════════════════════════════════════════════════
+
+// ── Action type definitions ───────────────────────────────────────────────────
+// _hold: true  → step shows "Hold for X seconds" + "Restore to" fields
+// _restore: fn(action) → returns the cleanup action object (expanded on save)
+// _map: obj    → virtual type that serialises to a different real action
+const ACT = {
+  wait:           {label:'Wait',            icon:'⏱', col:'--muted',
+    fields:[{k:'duration_ms',l:'Duration (ms)',t:'number',def:1000}]},
+
+  set_relay:      {label:'Set Relay',       icon:'🔌', col:'--blue',
+    _hold: true,
+    _restore: a=>({type:'set_relay', relay:a.relay, state:a.state==='on'?'off':'on'}),
+    fields:[{k:'relay',l:'Relay',t:'select',opt:'relays'},{k:'state',l:'State',t:'onoff',def:'on'}]},
+
+  set_dmx_scene:  {label:'DMX Scene',       icon:'🎚', col:'--purple',
+    _hold: true,
+    _restore: a=>({type:'set_dmx_scene', scene: a._restore_scene||'blackout'}),
+    fields:[{k:'scene',l:'Scene',t:'select',opt:'scenes'}]},
+
+  fade_dmx_scene: {label:'DMX Fade',        icon:'🌅', col:'--purple',
+    fields:[{k:'scene',l:'Scene',t:'select',opt:'scenes'},{k:'duration_ms',l:'Duration (ms)',t:'number',def:2000}]},
+
+  dmx_flash:      {label:'DMX Flash',       icon:'⚡', col:'--yellow',
+    fields:[{k:'scene',l:'Flash scene',t:'select',opt:'scenes'},{k:'return_scene',l:'Return scene',t:'select',opt:'scenes'},{k:'count',l:'Times',t:'number',def:3},{k:'on_ms',l:'On (ms)',t:'number',def:200},{k:'off_ms',l:'Off (ms)',t:'number',def:200}]},
+
+  set_fixture:    {label:'Set Fixture',     icon:'🎛', col:'--purple',
+    _setfixture: true, fields:[]},
+
+  // Legacy virtual types — kept for loading old cues but hidden from picker
+  fog_on:         {label:'Fog On',          icon:'🌫', col:'--blue',   _legacy:true,
+    _hold: true, _restore: ()=>({type:'fog_off'}),
+    _map:{type:'set_dmx_scene',scene:'fog_full'}, fields:[]},
+  fog_low:        {label:'Fog Low',         icon:'🌫', col:'--muted',  _legacy:true,
+    _hold: true, _restore: ()=>({type:'fog_off'}),
+    _map:{type:'set_dmx_scene',scene:'fog_low'}, fields:[]},
+  fog_off:        {label:'Fog Off',         icon:'🌫', col:'--muted',  _legacy:true,
+    _map:{type:'set_dmx_scene',scene:'fog_off'}, fields:[]},
+  cold_spark_high:{label:'Cold Spark High', icon:'✨', col:'--orange', _legacy:true,
+    _hold: true, _restore: ()=>({type:'set_dmx_scene', scene:'cold_spark_off'}),
+    _map:{type:'set_dmx_scene',scene:'cold_spark_high'}, fields:[]},
+  cold_spark_low: {label:'Cold Spark Low',  icon:'✨', col:'--muted',  _legacy:true,
+    _hold: true, _restore: ()=>({type:'set_dmx_scene', scene:'cold_spark_off'}),
+    _map:{type:'set_dmx_scene',scene:'cold_spark_low'}, fields:[]},
+  cold_spark_off: {label:'Cold Spark Off',  icon:'✨', col:'--muted',  _legacy:true,
+    _map:{type:'set_dmx_scene',scene:'cold_spark_off'}, fields:[]},
+
+  pixel_chase:    {label:'Pixel Chase',     icon:'💡', col:'--green',
+    fields:[{k:'color',l:'Color',t:'color',def:[255,100,0]},{k:'background',l:'Background',t:'color',def:[0,0,0]},{k:'duration_ms',l:'Duration (s)',t:'seconds',def:3},{k:'speed_ms',l:'Speed (ms/step)',t:'number',def:50}]},
+
+  pixel_scene:    {label:'Pixel Fill',      icon:'💡', col:'--green',
+    _hold: true, _restore: ()=>({type:'pixel_off'}),
+    fields:[{k:'color',l:'Color',t:'color',def:[0,80,255]}]},
+
+  pixel_off:      {label:'Pixels Off',      icon:'💡', col:'--muted',  fields:[]},
+  blackout:       {label:'All Off',         icon:'⬛', col:'--red',    fields:[]},
+
+  set_flag:       {label:'Set Flag',        icon:'🚩', col:'--orange',
+    fields:[{k:'flag',l:'Flag name — type or pick from list',t:'flag',placeholder:'e.g. show_armed'}],
+    _toAction: a=>({type:'set_var', name:a.flag, value:true})},
+
+  clear_flag:     {label:'Clear Flag',      icon:'🏳', col:'--muted',
+    fields:[{k:'flag',l:'Flag name — type or pick from list',t:'flag',placeholder:'e.g. show_armed'}],
+    _toAction: a=>({type:'set_var', name:a.flag, value:false})},
+
+  parallel:       {label:'Parallel Group', icon:'⚡', col:'--blue',
+    _parallel: true,
+    fields:[]},
+
+  group_effect:   {label:'Group Effect',  icon:'🎨', col:'--orange',
+    _groupeffect: true,
+    fields:[]},
+
+  // Legacy group types — kept for loading old cues but hidden from picker
+  group_color:    {label:'Group Solid',   icon:'🎨', col:'--purple', _legacy:true,
+    _hold: true,
+    _restore: a=>({type:'group_color', group:a.group, color:[0,0,0]}),
+    fields:[
+      {k:'group', l:'Group', t:'select', opt:'groups'},
+      {k:'color', l:'Color', t:'color', def:[255,255,255]},
+    ]},
+  group_flash:    {label:'Group Flash',   icon:'💥', col:'--yellow', _legacy:true,
+    _groupflash: true,
+    fields:[
+      {k:'group', l:'Group', t:'select', opt:'groups'},
+      {k:'colors', l:'Colors (cycle order)', t:'colorlist', def:[[255,255,255]]},
+      {k:'count',  l:'Total flashes', t:'number', def:15},
+      {k:'on_ms',  l:'On (ms)',  t:'number', def:50},
+      {k:'off_ms', l:'Off (ms)', t:'number', def:50},
+    ]},
+  group_chase:    {label:'Group Chase',   icon:'🌊', col:'--green',  _legacy:true,
+    fields:[
+      {k:'group',       l:'Group',          t:'select',  opt:'groups'},
+      {k:'color',       l:'Color',          t:'color',   def:[255,255,255]},
+      {k:'duration_ms', l:'Duration (s)',   t:'seconds', def:5},
+      {k:'speed_ms',    l:'Speed (ms/step)',t:'number',  def:100},
+    ]},
+};
+
+// ── Builder state ─────────────────────────────────────────────────────────────
+let bldr = {
+  id: null,
+  name: '',
+  description: '',
+  triggerType: 'gpio_changed',
+  triggerCfg: {pin_id:'rotation_index', active: true},
+  requireFlag: '',      // if set, condition checks vars.get(flag)
+  actions: [],
+  priority: 10,
+  cooldown_ms: 1000,
+};
+let bldrExpandedIdx = null;
+let bldrDragSrc = null;
+let hwConfig = {gpio_inputs:[], relay_outputs:[], pixel_strips:[]};
+
+// ── Library ───────────────────────────────────────────────────────────────────
+async function bldrLoadLibrary(){
+  try{
+    const r = await fetch('/api/routines');
+    const data = await r.json();
+    const lib = $('bldr-library');
+    const scenes = data.scenes || [];
+    if(!scenes.length){lib.innerHTML='<div class="empty">No scenes saved yet.</div>';return}
+    lib.innerHTML = scenes.map(s=>`
+      <div class="bldr-lib-item" onclick="bldrLoad('${s.id}')" data-id="${s.id}">
+        <div style="flex:1">
+          <div class="bldr-lib-name">${s.name||s.id}</div>
+          ${s.description?`<div class="bldr-lib-desc">${s.description}</div>`:''}
+        </div>
+        <button class="bldr-lib-del" onclick="event.stopPropagation();bldrDelete('${s.id}')" title="Delete">✕</button>
+      </div>`).join('');
+  }catch(e){console.warn('Library load error',e)}
+}
+
+async function bldrLoad(id){
+  try{
+    const r = await fetch(`/api/routines/${id}`);
+    const data = await r.json();
+    const s = data.scene;
+    bldr.id = s.id;
+    $('bldr-name').value = s.name || s.id;
+    $('bldr-desc').value = s.description || '';
+    $('bldr-priority').value = s.priority ?? 10;
+    $('bldr-cooldown').value = s.cooldown_ms ?? 1000;
+    // Parse trigger
+    const ev = s.trigger?.event || 'gpio_changed';
+    $('bldr-trigger-type').value = ev;
+    bldr.triggerType = ev;
+    bldr.triggerCfg = bldrParseTriggerCondition(ev, s.trigger?.condition);
+    // Extract any flag requirement from condition
+    const flagMatch = s.trigger?.condition?.match(/vars\.get\(['"]([^'"]+)['"]/);
+    bldr.requireFlag = flagMatch?.[1] || '';
+    bldrRenderTrigger();
+    // Load actions (map virtual types back)
+    const mapLoadedAction = a => {
+      if(a.type==='set_dmx_scene'){
+        if(a.scene==='fog_full') return {type:'fog_on'};
+        if(a.scene==='fog_low')  return {type:'fog_low'};
+        if(a.scene==='fog_off')  return {type:'fog_off'};
+      }
+      if(a.type==='set_var'){
+        return {type: a.value ? 'set_flag' : 'clear_flag', flag: a.name};
+      }
+      if(a.type==='pixel_chase'){
+        return {...a, duration_ms: (a.duration_ms||3000) / 1000};
+      }
+      // Legacy group types → unified group_effect
+      if(a.type==='group_color'){
+        return {type:'group_effect', effect:'solid', group:a.group, color:a.color||[255,255,255]};
+      }
+      if(a.type==='group_flash'){
+        return {type:'group_effect', effect:'flash', group:a.group, colors:a.colors||[[255,255,255]], count:a.count||15, on_ms:a.on_ms||200, off_ms:a.off_ms||200};
+      }
+      if(a.type==='group_chase'){
+        return {type:'group_effect', effect:'chase', group:a.group, color:a.color||[255,255,255], duration_ms:(a.duration_ms||5000)/1000, speed_ms:a.speed_ms||100};
+      }
+      if(a.type==='parallel'){
+        return {...a, actions:(a.actions||[]).map(sa=>mapLoadedAction(sa))};
+      }
+      return {...a};
+    };
+    bldr.actions = (s.actions||[]).map(mapLoadedAction);
+    bldrRenderSteps();
+    // Highlight selected
+    document.querySelectorAll('.bldr-lib-item').forEach(el=>{
+      el.classList.toggle('selected', el.dataset.id===id);
+    });
+  }catch(e){flash($('bldr-msg'),`Load failed: ${e.message}`,false)}
+}
+
+function bldrParseTriggerCondition(evType, cond){
+  if(evType==='gpio_changed'){
+    const pinMatch = cond?.match(/pin_id\s*==\s*['"]([^'"]+)['"]/);
+    const activeMatch = cond?.match(/event\.active\s*==\s*(True|False)/i);
+    return {
+      pin_id: pinMatch?.[1] || hwConfig.gpio_inputs[0]?.id || '',
+      active: activeMatch ? activeMatch[1].toLowerCase()==='true' : true,
+    };
+  }
+  if(evType==='operator_trigger'){
+    const m = cond?.match(/trigger_id\s*==\s*['"]([^'"]+)['"]/);
+    return {trigger_id: m?.[1] || ''};
+  }
+  return {};
+}
+
+async function bldrDelete(id){
+  if(!confirm(`Delete scene "${id}"?`)) return;
+  try{
+    const r = await api('DELETE', `/api/routines/${id}`);
+    if(r.ok){bldrNew();bldrLoadLibrary()}
+    else flash($('bldr-msg'), r.detail||'Delete failed', false);
+  }catch(e){flash($('bldr-msg'),e.message,false)}
+}
+
+function bldrNew(){
+  bldr = {id:null,name:'',description:'',triggerType:'gpio_changed',
+    triggerCfg:{pin_id:hwConfig.gpio_inputs[0]?.id||'',active:true},
+    requireFlag:'',actions:[],priority:10,cooldown_ms:1000};
+  $('bldr-name').value='';
+  $('bldr-desc').value='';
+  $('bldr-priority').value=10;
+  $('bldr-cooldown').value=1000;
+  $('bldr-trigger-type').value='gpio_changed';
+  document.querySelectorAll('.bldr-lib-item').forEach(el=>el.classList.remove('selected'));
+  bldrRenderTrigger();
+  bldrRenderSteps();
+}
+
+// ── Trigger ───────────────────────────────────────────────────────────────────
+function bldrRenderTrigger(){
+  bldr.triggerType = $('bldr-trigger-type').value;
+  const el = $('bldr-trigger-block');
+  const cfg = bldr.triggerCfg;
+  const flags = getKnownFlags();
+  const cur = bldr.requireFlag || '';
+  const flagOpts = flags.map(f=>`<option value="${f}" ${f===cur?'selected':''}>${f}</option>`).join('');
+  const hasCustom = cur && !flags.includes(cur);
+  const flagField = `<label style="grid-column:1/-1">
+    Only fire if flag is set
+    <select id="bldr-flag-select" onchange="bldrSetFlag(this.value)" style="margin-top:4px">
+      <option value="" ${!cur?'selected':''}>— always fire (no flag check) —</option>
+      ${flagOpts}
+      ${hasCustom?`<option value="${cur}" selected>${cur} (custom)</option>`:''}
+    </select>
+    <span style="font-size:9px;color:var(--muted);margin-top:2px;display:block">
+      ${flags.length?'Flags come from "Set Flag" steps in your saved scenes.':
+        'No flags defined yet — add a "Set Flag" step to a scene to create one.'}</span>
+  </label>`;
+
+  if(bldr.triggerType === 'gpio_changed'){
+    const pins = hwConfig.gpio_inputs.map(g=>`<option value="${g.id}" ${cfg.pin_id===g.id?'selected':''}>${g.id} (BCM ${g.pin})</option>`).join('');
+    el.innerHTML=`<div class="bldr-trigger-block">
+      <div class="bldr-trigger-header"><span class="bldr-trigger-icon">📌</span><span class="bldr-trigger-label">GPIO Input</span></div>
+      <div class="bldr-trigger-fields">
+        <label>Input pin<select onchange="bldr.triggerCfg.pin_id=this.value">${pins}</select></label>
+        <label>Fires when<div class="toggle-pill" style="margin-top:4px">
+          <button class="${cfg.active===true?'active':''}" onclick="bldr.triggerCfg.active=true;this.classList.add('active');this.nextElementSibling.classList.remove('active')">ACTIVE</button>
+          <button class="${cfg.active===false?'active':''}" onclick="bldr.triggerCfg.active=false;this.classList.add('active');this.previousElementSibling.classList.remove('active')">idle</button>
+        </div></label>
+        ${flagField}
+      </div>
+    </div>`;
+  } else {
+    el.innerHTML=`<div class="bldr-trigger-block">
+      <div class="bldr-trigger-header"><span class="bldr-trigger-icon">🎮</span><span class="bldr-trigger-label">Operator Button</span></div>
+      <div class="bldr-trigger-fields">
+        <label>Button ID<input type="text" value="${cfg.trigger_id||''}" placeholder="e.g. start_show" oninput="bldr.triggerCfg.trigger_id=this.value"></label>
+        ${flagField}
+      </div>
+    </div>`;
+  }
+}
+
+// ── Steps ─────────────────────────────────────────────────────────────────────
+function bldrRenderSteps(){
+  const el = $('bldr-steps');
+  if(!bldr.actions.length){el.innerHTML='<div class="empty" style="text-align:center;padding:16px">No steps yet — add your first step below.</div>';return}
+  el.innerHTML = bldr.actions.map((a,i)=>bldrStepHTML(a,i)).join('');
+  // Attach drag events
+  el.querySelectorAll('.bldr-step').forEach(card=>{
+    card.addEventListener('dragstart', e=>{
+      bldrDragSrc = +card.dataset.idx;
+      e.dataTransfer.effectAllowed='move';
+      setTimeout(()=>card.classList.add('dragging'),0);
+    });
+    card.addEventListener('dragend', ()=>card.classList.remove('dragging'));
+    card.addEventListener('dragover', e=>{
+      e.preventDefault();
+      e.dataTransfer.dropEffect='move';
+      card.classList.add('drag-over');
+    });
+    card.addEventListener('dragleave', ()=>card.classList.remove('drag-over'));
+    card.addEventListener('drop', e=>{
+      e.preventDefault();
+      card.classList.remove('drag-over');
+      const dst = +card.dataset.idx;
+      if(bldrDragSrc===null||bldrDragSrc===dst)return;
+      const items = bldr.actions.splice(bldrDragSrc,1);
+      bldr.actions.splice(dst,0,...items);
+      bldrExpandedIdx = null;
+      bldrRenderSteps();
+    });
+  });
+}
+
+function bldrStepHTML(action, idx){
+  const def = ACT[action.type] || {label:action.type, icon:'❓', col:'--muted', fields:[]};
+  const isExpanded = bldrExpandedIdx === idx;
+  const summary = bldrStepSummary(action, def);
+  const formHTML = isExpanded ? bldrStepFormHTML(action, idx, def) : '';
+  return `<div class="bldr-step ${isExpanded?'expanded':''}" draggable="true" data-idx="${idx}">
+    <div class="bldr-step-header">
+      <span class="bldr-drag-handle">⠿</span>
+      <span class="bldr-step-num">${idx+1}</span>
+      <span class="bldr-step-icon">${def.icon}</span>
+      <span class="bldr-step-type" style="color:var(${def.col})">${def.label}</span>
+      <span class="bldr-step-summary">${summary}</span>
+      <div class="bldr-step-actions">
+        <button class="btn-icon btn-sm" onclick="bldrToggleExpand(${idx})" title="${isExpanded?'Collapse':'Edit'}">${isExpanded?'▲':'▼'}</button>
+        <button class="btn-icon btn-sm" style="color:var(--red)" onclick="bldrDeleteStep(${idx})" title="Delete">✕</button>
+      </div>
+    </div>
+    ${formHTML}
+  </div>`;
+}
+
+function bldrHoldSuffix(a){
+  if(!a._hold_s||+a._hold_s<=0) return '';
+  return ` · hold ${a._hold_s}s → auto-off`;
+}
+
+function bldrStepSummary(action, def){
+  const a = action;
+  const hold = bldrHoldSuffix(a);
+  switch(a.type){
+    case 'wait':          return `${a.duration_ms||0}ms`;
+    case 'set_relay':     return `${a.relay} → ${a.state}${hold}`;
+    case 'set_dmx_scene': return `${a.scene||''}${hold}`;
+    case 'fade_dmx_scene':return `${a.scene} (${a.duration_ms}ms)`;
+    case 'dmx_flash':     return `${a.scene} ×${a.count} (${a.on_ms}ms/${a.off_ms}ms)`;
+    case 'pixel_chase':   return `${a.duration_ms||3}s at ${a.speed_ms||50}ms/step`;
+    case 'pixel_scene':   return `${rgbStr(a.color)}${hold}`;
+    case 'fog_on':case 'fog_low':return hold?`hold ${a._hold_s}s → fog off`:'';
+    case 'cold_spark_high':case 'cold_spark_low':return hold?`hold ${a._hold_s}s → sparks off`:'';
+    case 'set_flag':      return a.flag ? `${a.flag} = true` : '';
+    case 'clear_flag':    return a.flag ? `${a.flag} = false` : '';
+    case 'parallel': {
+      const tracks = (a.actions||[]);
+      if(!tracks.length) return '(empty — add tracks below)';
+      return tracks.map(sa=>{const d=ACT[sa.type];return d?`${d.icon} ${d.label}`:sa.type}).join(' + ');
+    }
+    case 'group_color': return `${a.group||'?'} → ${rgbStr(a.color)}${hold}`;
+    case 'group_flash': return `${a.group||'?'} ×${a.count||15} (${(a.colors||[]).length} color${(a.colors||[]).length===1?'':'s'}, ${a.on_ms||50}ms on)`;
+    case 'group_chase': return `${a.group||'?'} ${a.duration_ms||5}s @ ${a.speed_ms||100}ms/step`;
+    case 'group_effect': {
+      const ef = a.effect||'flash';
+      if(ef==='flash') return `${a.group||'?'} flash ×${a.count||15} (${(a.colors||[]).length} color${(a.colors||[]).length===1?'':'s'}, ${a.on_ms||200}ms on)`;
+      if(ef==='solid') return `${a.group||'?'} solid → ${rgbStr(a.color)}`;
+      if(ef==='chase') return `${a.group||'?'} chase ${a.duration_ms||5}s @ ${a.speed_ms||100}ms/step`;
+      return a.group||'?';
+    }
+    case 'set_fixture': {
+      const target = a.fixture||a.group||'?';
+      const chs = a.channels||{};
+      const chSummary = Object.entries(chs).filter(([,v])=>v>0).map(([k,v])=>`${k}:${v}`).join(', ')||'all off';
+      return `${target} → ${chSummary}${a.fade_ms?` (fade ${a.fade_ms}ms)`:''}`;
+    }
+    default: return '';
+  }
+}
+
+function rgbStr(c){if(!c)return'';const [r,g,b]=Array.isArray(c)?c:[0,0,0];return`rgb(${r},${g},${b})`}
+
+function colorToHex(c){
+  const [r,g,b]=Array.isArray(c)?c:[0,0,0];
+  return '#'+[r,g,b].map(x=>x.toString(16).padStart(2,'0')).join('');
+}
+
+function hexToRgb(hex){
+  const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+  return[r,g,b];
+}
+
+function bldrStepFormHTML(action, idx, def){
+  if(def._parallel)    return bldrParallelFormHTML(action, idx);
+  if(def._setfixture)  return bldrSetFixtureFormHTML(action, idx);
+  if(def._groupeffect) return bldrGroupEffectFormHTML(action, idx);
+  const hasAnyFields = def.fields.length > 0 || def._hold;
+  if(!hasAnyFields) return `<div class="bldr-step-form wide" style="padding-top:8px"><span style="color:var(--muted);font-size:11px">No configuration needed for this step.</span></div>`;
+
+  const sceneOpts = knownScenes.map(s=>`<option value="${s}" ${action.scene===s||action.return_scene===s?'selected':''}>${s}</option>`).join('');
+  const relayOpts = hwConfig.relay_outputs.map(r=>`<option value="${r.id}" ${action.relay===r.id?'selected':''}>${r.id}</option>`).join('');
+
+  const fieldsHTML = def.fields.map(f=>{
+    const val = action[f.k] ?? f.def ?? '';
+    if(f.t==='number')  return `<div class="bldr-field"><label>${f.l}</label><input type="number" value="${val}" oninput="bldrSetProp(${idx},'${f.k}',+this.value)"></div>`;
+    if(f.t==='seconds') return `<div class="bldr-field"><label>${f.l}</label><input type="number" step="0.5" value="${val}" oninput="bldrSetProp(${idx},'${f.k}',+this.value)"></div>`;
+    if(f.t==='text')    return `<div class="bldr-field"><label>${f.l}</label><input type="text" value="${val}" placeholder="${f.placeholder||''}" oninput="bldrSetProp(${idx},'${f.k}',this.value)"></div>`;
+    if(f.t==='flag'){
+      const flags=getKnownFlags();
+      const cur=action[f.k]||'';
+      const isKnown=flags.includes(cur);
+      const showInput=cur&&!isKnown;
+      const flagOpts=flags.map(fl=>`<option value="${fl}" ${fl===cur?'selected':''}>${fl}</option>`).join('');
+      return `<div class="bldr-field" style="grid-column:1/-1">
+        <label>${f.l}</label>
+        <select onchange="bldrFlagStepSelect(this,${idx},'${f.k}')">
+          <option value="" ${!cur?'selected':''}>— select a flag —</option>
+          ${flagOpts}
+          <option value="__custom__" ${showInput?'selected':''}>✚ New flag name…</option>
+        </select>
+        <input type="text"
+          style="margin-top:4px;${showInput?'':'display:none'}"
+          value="${showInput?cur:''}"
+          placeholder="Type a new flag name (e.g. show_armed)"
+          oninput="bldrSetProp(${idx},'${f.k}',this.value.trim())">
+        <span style="font-size:9px;color:var(--muted);margin-top:3px;display:block">
+          ${flags.length
+            ? 'Pick an existing flag or choose "New flag name…" to create one.'
+            : 'No flags yet — choose "New flag name…" above and type a name to create one.'}
+        </span>
+      </div>`;
+    }
+    if(f.t==='color')   return `<div class="bldr-field"><label>${f.l}</label><div class="bldr-field-row"><input type="color" value="${colorToHex(val)}" oninput="bldrSetColorProp(${idx},'${f.k}',this.value,this.nextElementSibling)"><input type="text" value="${rgbStr(val)}" readonly style="color:var(--muted);flex:1"></div></div>`;
+    if(f.t==='colorlist'){
+      const colors = Array.isArray(val) ? val : (f.def||[[255,255,255]]);
+      const pickers = colors.map((c,ci)=>`
+        <div style="display:flex;align-items:center;gap:6px">
+          <input type="color" value="${colorToHex(Array.isArray(c)?c:[255,255,255])}"
+            oninput="bldrColorListSet(${idx},'${f.k}',${ci},this.value,this.nextElementSibling)">
+          <input type="text" value="${rgbStr(Array.isArray(c)?c:[255,255,255])}" readonly style="color:var(--muted);width:100px">
+          <button class="btn-icon btn-sm" style="color:var(--red)" onclick="bldrColorListRemove(${idx},'${f.k}',${ci})" title="Remove">✕</button>
+        </div>`).join('');
+      return `<div class="bldr-field" style="grid-column:1/-1">
+        <label>${f.l}</label>
+        <div style="display:flex;flex-direction:column;gap:4px;margin-bottom:6px">${pickers}</div>
+        <button class="btn-sm" onclick="bldrColorListAdd(${idx},'${f.k}')">+ Add color</button>
+      </div>`;
+    }
+    if(f.t==='select'&&f.opt==='scenes') return `<div class="bldr-field"><label>${f.l}</label><select onchange="bldrSetProp(${idx},'${f.k}',this.value)"><option value="">— select —</option>${sceneOpts}</select></div>`;
+    if(f.t==='select'&&f.opt==='relays') return `<div class="bldr-field"><label>${f.l}</label><select onchange="bldrSetProp(${idx},'${f.k}',this.value)">${relayOpts}</select></div>`;
+    if(f.t==='select'&&f.opt==='groups'){
+      const groups=hwConfig.fixture_groups||[];
+      const cur=action[f.k]||'';
+      const opts=groups.map(g=>`<option value="${g.id}" ${g.id===cur?'selected':''}>${g.name}</option>`).join('');
+      return `<div class="bldr-field"><label>${f.l}</label><select onchange="bldrSetProp(${idx},'${f.k}',this.value)">
+        <option value="" ${!cur?'selected':''}>— select group —</option>${opts}</select></div>`;
+    }
+    if(f.t==='onoff') return `<div class="bldr-field"><label>${f.l}</label><div class="toggle-pill">
+      <button class="${val==='on'?'active':''}" onclick="bldrSetProp(${idx},'${f.k}','on');this.classList.add('active');this.nextElementSibling.classList.remove('active')">ON</button>
+      <button class="${val==='off'?'active':''}" onclick="bldrSetProp(${idx},'${f.k}','off');this.classList.add('active');this.previousElementSibling.classList.remove('active')">OFF</button>
+    </div></div>`;
+    return '';
+  }).join('');
+
+  // Hold for X seconds (only for types with _hold)
+  const holdHTML = def._hold ? `
+    <div class="bldr-field" style="grid-column:1/-1;border-top:1px solid var(--border);padding-top:8px;margin-top:2px">
+      <label>Hold for (seconds) — then auto-restore</label>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="number" min="0" step="1" value="${action._hold_s||''}" placeholder="0 = indefinite (no auto-restore)"
+          oninput="bldrSetProp(${idx},'_hold_s',this.value?+this.value:null)" style="flex:1">
+        ${def._restore && action.type==='set_dmx_scene' ? `
+          <div style="display:flex;align-items:center;gap:6px;flex:1">
+            <span style="font-size:10px;color:var(--muted);white-space:nowrap">Restore to:</span>
+            <select onchange="bldrSetProp(${idx},'_restore_scene',this.value)" style="flex:1">
+              <option value="">blackout (default)</option>${sceneOpts}
+            </select>
+          </div>` : ''}
+      </div>
+    </div>` : '';
+
+  return `<div class="bldr-step-form">${fieldsHTML}${holdHTML}</div>`;
+}
+
+function bldrSetProp(idx, key, val){
+  bldr.actions[idx][key] = val;
+  const card = $('bldr-steps').querySelectorAll('.bldr-step')[idx];
+  if(card){
+    const def = ACT[bldr.actions[idx].type]||{};
+    const sumEl = card.querySelector('.bldr-step-summary');
+    if(sumEl) sumEl.textContent = bldrStepSummary(bldr.actions[idx], def);
+  }
+}
+
+function bldrSetColorProp(idx, key, hex, readonlyInput){
+  const rgb = hexToRgb(hex);
+  bldr.actions[idx][key] = rgb;
+  if(readonlyInput) readonlyInput.value = rgbStr(rgb);
+  const card = $('bldr-steps').querySelectorAll('.bldr-step')[idx];
+  if(card){const def=ACT[bldr.actions[idx].type]||{};const sumEl=card.querySelector('.bldr-step-summary');if(sumEl)sumEl.textContent=bldrStepSummary(bldr.actions[idx],def);}
+}
+
+function bldrToggleExpand(idx){
+  bldrExpandedIdx = bldrExpandedIdx===idx ? null : idx;
+  bldrRenderSteps();
+}
+
+function bldrDeleteStep(idx){
+  bldr.actions.splice(idx,1);
+  if(bldrExpandedIdx===idx) bldrExpandedIdx=null;
+  else if(bldrExpandedIdx>idx) bldrExpandedIdx--;
+  bldrRenderSteps();
+}
+
+// ── Parallel group ────────────────────────────────────────────────────────────
+function bldrParallelFormHTML(action, idx){
+  const subs = action.actions || [];
+  const sceneOpts = knownScenes.map(s=>`<option value="${s}">${s}</option>`).join('');
+  const relayOpts = hwConfig.relay_outputs.map(r=>`<option value="${r.id}">${r.id}</option>`).join('');
+
+  // Allowed sub-types (exclude parallel itself)
+  const SUB_TYPES = ['set_fixture','group_effect','wait','set_relay',
+    'set_dmx_scene','fade_dmx_scene','dmx_flash',
+    'pixel_chase','pixel_scene','pixel_off','blackout',
+    'set_flag','clear_flag'];
+
+  const tracksHTML = subs.map((sa,si)=>bldrParallelSubHTML(idx,si,sa,sceneOpts,relayOpts)).join('');
+
+  const typePickerOpts = SUB_TYPES.map(k=>{
+    const d=ACT[k]||{};
+    return `<option value="${k}">${d.icon||''} ${d.label||k}</option>`;
+  }).join('');
+
+  return `<div class="bldr-step-form wide" style="padding-top:0">
+    <div style="font-size:10px;color:var(--muted);padding:8px 0 4px">
+      All tracks below run <strong>simultaneously</strong>. The step ends when the longest track finishes.
+    </div>
+    <div id="par-tracks-${idx}">${tracksHTML || '<div style="color:var(--muted);font-size:11px;padding:4px 0">No tracks yet — add one below.</div>'}</div>
+    <div style="display:flex;gap:6px;margin-top:8px;align-items:center">
+      <select id="par-type-${idx}" style="flex:1">${typePickerOpts}</select>
+      <button class="btn btn-sm" onclick="bldrParallelAdd(${idx})">+ Add track</button>
+    </div>
+  </div>`;
+}
+
+function bldrParallelSubHTML(stepIdx, subIdx, sa, sceneOpts, relayOpts){
+  const def = ACT[sa.type] || {label:sa.type, icon:'❓', col:'--muted', fields:[]};
+  const hasColorList = def.fields.some(f => f.t === 'colorlist');
+
+  const renderInlineField = f => {
+    const val = sa[f.k] ?? f.def ?? '';
+    if(f.t==='number')  return `<div style="display:flex;flex-direction:column;align-items:center;gap:1px">
+      <span style="font-size:9px;color:var(--muted);white-space:nowrap">${f.l}</span>
+      <input type="number" value="${val}" style="width:60px" title="${f.l}" oninput="bldrParallelSetProp(${stepIdx},${subIdx},'${f.k}',+this.value)">
+    </div>`;
+    if(f.t==='seconds') return `<div style="display:flex;flex-direction:column;align-items:center;gap:1px">
+      <span style="font-size:9px;color:var(--muted);white-space:nowrap">${f.l}</span>
+      <input type="number" step="0.5" value="${val}" style="width:60px" title="${f.l}" oninput="bldrParallelSetProp(${stepIdx},${subIdx},'${f.k}',+this.value)">
+    </div>`;
+    if(f.t==='text')    return `<input type="text" value="${val}" style="width:100px" placeholder="${f.placeholder||f.l}" oninput="bldrParallelSetProp(${stepIdx},${subIdx},'${f.k}',this.value)">`;
+    if(f.t==='color')   return `<input type="color" value="${colorToHex(Array.isArray(val)?val:f.def||[0,0,0])}" title="${f.l}" oninput="bldrParallelSetColor(${stepIdx},${subIdx},'${f.k}',this.value)">`;
+    if(f.t==='colorlist') return ''; // rendered in second row
+    if(f.t==='flag'){
+      const flags=getKnownFlags();
+      const cur=sa[f.k]||'';
+      const flagOpts=flags.map(fl=>`<option value="${fl}" ${fl===cur?'selected':''}>${fl}</option>`).join('');
+      return `<select title="${f.l}" onchange="bldrParallelSetProp(${stepIdx},${subIdx},'${f.k}',this.value)">
+        <option value="" ${!cur?'selected':''}>— flag —</option>${flagOpts}</select>`;
+    }
+    if(f.t==='onoff') return `<select title="${f.l}" onchange="bldrParallelSetProp(${stepIdx},${subIdx},'${f.k}',this.value)">
+      <option value="on" ${val==='on'?'selected':''}>ON</option>
+      <option value="off" ${val==='off'?'selected':''}>OFF</option></select>`;
+    if(f.t==='select'&&f.opt==='scenes'){
+      const cur=sa[f.k]||'';
+      const opts=knownScenes.map(s=>`<option value="${s}" ${s===cur?'selected':''}>${s}</option>`).join('');
+      return `<select title="${f.l}" onchange="bldrParallelSetProp(${stepIdx},${subIdx},'${f.k}',this.value)"><option value="" ${!cur?'selected':''}>— scene —</option>${opts}</select>`;
+    }
+    if(f.t==='select'&&f.opt==='relays'){
+      const cur=sa[f.k]||'';
+      const opts=hwConfig.relay_outputs.map(r=>`<option value="${r.id}" ${r.id===cur?'selected':''}>${r.id}</option>`).join('');
+      return `<select title="${f.l}" onchange="bldrParallelSetProp(${stepIdx},${subIdx},'${f.k}',this.value)">${opts}</select>`;
+    }
+    if(f.t==='select'&&f.opt==='groups'){
+      const cur=sa[f.k]||'';
+      const opts=(hwConfig.fixture_groups||[]).map(g=>`<option value="${g.id}" ${g.id===cur?'selected':''}>${g.name}</option>`).join('');
+      return `<select title="${f.l}" onchange="bldrParallelSetProp(${stepIdx},${subIdx},'${f.k}',this.value)"><option value="" ${!cur?'selected':''}>— group —</option>${opts}</select>`;
+    }
+    return '';
+  };
+
+  // Compact inline form for group_effect sub-tracks
+  let mainRow;
+  if(def._groupeffect){
+    const ef=sa.effect||'flash';
+    const grpOpts=(hwConfig.fixture_groups||[]).map(g=>`<option value="${g.id}" ${g.id===sa.group?'selected':''}>${g.name||g.id}</option>`).join('');
+    let efxFields='';
+    if(ef==='flash'){
+      const colors=Array.isArray(sa.colors)?sa.colors:[[255,255,255]];
+      const pks=colors.map((c,ci)=>`<input type="color" value="${colorToHex(Array.isArray(c)?c:[255,255,255])}" style="width:24px;height:22px;padding:1px;cursor:pointer" title="Color ${ci+1}" oninput="bldrParallelSubGEColorSet(${stepIdx},${subIdx},${ci},this.value)">`).join('');
+      efxFields=`${pks}<input type="number" value="${sa.count||15}" style="width:44px" title="Flashes" oninput="bldrParallelSetProp(${stepIdx},${subIdx},'count',+this.value)"><input type="number" value="${sa.on_ms||200}" style="width:50px" title="On ms" oninput="bldrParallelSetProp(${stepIdx},${subIdx},'on_ms',+this.value)"><input type="number" value="${sa.off_ms||200}" style="width:50px" title="Off ms" oninput="bldrParallelSetProp(${stepIdx},${subIdx},'off_ms',+this.value)">`;
+    } else {
+      const c=Array.isArray(sa.color)?sa.color:[255,255,255];
+      efxFields=`<input type="color" value="${colorToHex(c)}" style="width:26px;height:24px;cursor:pointer" title="Color" oninput="bldrParallelSetColor(${stepIdx},${subIdx},'color',this.value)">`;
+      if(ef==='chase') efxFields+=`<input type="number" step="0.5" value="${sa.duration_ms||5}" style="width:50px" title="Duration s" oninput="bldrParallelSetProp(${stepIdx},${subIdx},'duration_ms',+this.value)">`;
+    }
+    mainRow=`<select title="Group" onchange="bldrParallelSetProp(${stepIdx},${subIdx},'group',this.value)"><option value="" ${!sa.group?'selected':''}>— group —</option>${grpOpts}</select>
+      <select title="Effect" onchange="bldrParallelSetProp(${stepIdx},${subIdx},'effect',this.value);bldrExpandedIdx=${stepIdx};bldrRenderSteps()">
+        <option value="flash" ${ef==='flash'?'selected':''}>Flash</option>
+        <option value="solid" ${ef==='solid'?'selected':''}>Solid</option>
+        <option value="chase" ${ef==='chase'?'selected':''}>Chase</option>
+      </select>${efxFields}`;
+  } else if(def._setfixture){
+    const tType=sa.group?'group':'fixture';
+    const fixtureOpts=(hwConfig.fixtures||[]).map(f=>`<option value="${f.id}" ${f.id===sa.fixture?'selected':''}>${f.name||f.id}</option>`).join('');
+    const groupOpts=(hwConfig.fixture_groups||[]).map(g=>`<option value="${g.id}" ${g.id===sa.group?'selected':''}>${g.name||g.id}</option>`).join('');
+    const channels=sfGetChannelsForTarget(tType, sa.fixture||sa.group||'');
+    const chInputs=channels.slice(0,4).map(ch=>`
+      <span style="display:inline-flex;flex-direction:column;align-items:center;gap:0px">
+        <span style="font-size:8px;color:var(--muted)">${ch}</span>
+        <input type="number" min="0" max="255" value="${(sa.channels||{})[ch]??0}" style="width:44px"
+          oninput="bldrParallelSubSFCh(${stepIdx},${subIdx},'${ch}',+this.value)">
+      </span>`).join('');
+    mainRow=`<select title="Type" onchange="bldrParallelSubSFType(${stepIdx},${subIdx},this.value)">
+        <option value="fixture" ${tType==='fixture'?'selected':''}>Fixture</option>
+        <option value="group" ${tType==='group'?'selected':''}>Group</option>
+      </select>
+      ${tType==='fixture'?`<select title="Fixture" onchange="bldrParallelSubSFId(${stepIdx},${subIdx},'fixture',this.value)">${fixtureOpts}</select>`
+        :`<select title="Group" onchange="bldrParallelSubSFId(${stepIdx},${subIdx},'group',this.value)">${groupOpts}</select>`}
+      ${chInputs}`;
+  } else {
+    mainRow = def.fields.map(renderInlineField).join('');
+  }
+
+  const delayField = `<div style="display:flex;flex-direction:column;align-items:center;gap:1px;flex-shrink:0">
+    <span style="font-size:9px;color:var(--muted);white-space:nowrap">Delay (ms)</span>
+    <input type="number" min="0" value="${sa.delay_ms||0}" style="width:60px" title="Start delay within parallel block"
+      oninput="bldrParallelSetProp(${stepIdx},${subIdx},'delay_ms',+this.value)">
+  </div>`;
+  const removeBtn = `<button class="btn-icon btn-sm" style="color:var(--red);margin-left:auto;flex-shrink:0" onclick="bldrParallelRemove(${stepIdx},${subIdx})" title="Remove track">✕</button>`;
+
+  // Build colorlist rows (one per colorlist field)
+  const colorRows = def.fields.filter(f=>f.t==='colorlist').map(f=>{
+    const colors = Array.isArray(sa[f.k]) ? sa[f.k] : (f.def||[[255,255,255]]);
+    const pickers = colors.map((c,ci)=>`
+      <span style="display:inline-flex;flex-direction:column;align-items:center;gap:1px">
+        <input type="color" value="${colorToHex(Array.isArray(c)?c:[255,255,255])}"
+          style="width:28px;height:26px;padding:1px;cursor:pointer" title="Color ${ci+1}"
+          oninput="bldrParallelColorListSet(${stepIdx},${subIdx},'${f.k}',${ci},this.value)">
+        ${colors.length>1?`<button style="font-size:8px;color:var(--red);background:none;border:none;cursor:pointer;padding:0;line-height:1" onclick="bldrParallelColorListRemove(${stepIdx},${subIdx},'${f.k}',${ci})" title="Remove">✕</button>`:'<span style="font-size:8px;color:transparent">·</span>'}
+      </span>`).join('');
+    return `<div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:5px;padding-left:4px">
+      <span style="font-size:10px;color:var(--muted);white-space:nowrap">${f.l}:</span>
+      ${pickers}
+      <button style="width:28px;height:26px;font-size:16px;color:var(--muted);background:none;border:1px dashed var(--border);border-radius:3px;cursor:pointer;padding:0;line-height:1"
+        onclick="bldrParallelColorListAdd(${stepIdx},${subIdx},'${f.k}')" title="Add color">+</button>
+    </div>`;
+  }).join('');
+
+  if(hasColorList){
+    return `<div style="padding:5px 0;border-bottom:1px solid var(--border)">
+      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+        <span style="color:var(${def.col});font-size:12px;white-space:nowrap">${def.icon} ${def.label}</span>
+        ${mainRow}${delayField}${removeBtn}
+      </div>
+      ${colorRows}
+    </div>`;
+  }
+
+  return `<div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid var(--border)">
+    <span style="color:var(${def.col});font-size:12px;white-space:nowrap">${def.icon} ${def.label}</span>
+    ${mainRow}${delayField}${removeBtn}
+  </div>`;
+}
+
+function bldrParallelAdd(stepIdx){
+  const sel = $(`par-type-${stepIdx}`);
+  if(!sel) return;
+  const type = sel.value;
+  const def = ACT[type]||{};
+  const sa = {type, delay_ms:0};
+  (def.fields||[]).forEach(f=>{if(f.def!==undefined)sa[f.k]=f.def});
+  if(type==='set_relay'&&hwConfig.relay_outputs.length) sa.relay=hwConfig.relay_outputs[0].id;
+  if((type==='set_dmx_scene'||type==='fade_dmx_scene')&&knownScenes.length) sa.scene=knownScenes[0];
+  if(type==='dmx_flash'&&knownScenes.length){sa.scene='white_flash';sa.return_scene='blackout'}
+  if(type==='group_flash'&&!sa.colors) sa.colors=[[255,255,255]];
+  if(type==='group_effect'){sa.effect='flash';sa.group=(hwConfig.fixture_groups||[])[0]?.id||'';sa.colors=[[255,255,255]];sa.count=15;sa.on_ms=200;sa.off_ms=200;}
+  if(type==='set_fixture'){sa.fixture=(hwConfig.fixtures||[])[0]?.id||'';sa.channels={};sa.fade_ms=0;}
+  if(def?._map) Object.assign(sa, def._map);
+  bldr.actions[stepIdx].actions = bldr.actions[stepIdx].actions || [];
+  bldr.actions[stepIdx].actions.push(sa);
+  bldrExpandedIdx = stepIdx;
+  bldrRenderSteps();
+}
+
+function bldrParallelRemove(stepIdx, subIdx){
+  bldr.actions[stepIdx].actions.splice(subIdx,1);
+  bldrExpandedIdx = stepIdx;
+  bldrRenderSteps();
+}
+
+function bldrParallelSetProp(stepIdx, subIdx, key, val){
+  bldr.actions[stepIdx].actions[subIdx][key] = val;
+  const card = $('bldr-steps').querySelectorAll('.bldr-step')[stepIdx];
+  if(card){
+    const def=ACT[bldr.actions[stepIdx].type]||{};
+    const sumEl=card.querySelector('.bldr-step-summary');
+    if(sumEl)sumEl.textContent=bldrStepSummary(bldr.actions[stepIdx],def);
+  }
+}
+
+function bldrParallelSetColor(stepIdx, subIdx, key, hex){
+  bldr.actions[stepIdx].actions[subIdx][key] = hexToRgb(hex);
+}
+
+function bldrParallelColorListSet(stepIdx, subIdx, key, colorIdx, hex){
+  const colors = bldr.actions[stepIdx].actions[subIdx][key] || [];
+  colors[colorIdx] = hexToRgb(hex);
+  bldr.actions[stepIdx].actions[subIdx][key] = colors;
+}
+
+function bldrParallelColorListAdd(stepIdx, subIdx, key){
+  const sa = bldr.actions[stepIdx].actions[subIdx];
+  if(!Array.isArray(sa[key])) sa[key] = [[255,255,255]];
+  sa[key].push([255,255,255]);
+  bldrExpandedIdx = stepIdx;
+  bldrRenderSteps();
+}
+
+function bldrParallelColorListRemove(stepIdx, subIdx, key, colorIdx){
+  const sa = bldr.actions[stepIdx].actions[subIdx];
+  if(Array.isArray(sa[key]) && sa[key].length > 1){
+    sa[key].splice(colorIdx, 1);
+  }
+  bldrExpandedIdx = stepIdx;
+  bldrRenderSteps();
+}
+
+// ── Parallel sub-track helpers for group_effect / set_fixture ────────────────
+function bldrParallelSubGEColorSet(stepIdx, subIdx, ci, hex){
+  const sa=bldr.actions[stepIdx].actions[subIdx];
+  if(!Array.isArray(sa.colors)) sa.colors=[[255,255,255]];
+  sa.colors[ci]=hexToRgb(hex);
+}
+function bldrParallelSubSFType(stepIdx, subIdx, targetType){
+  const sa=bldr.actions[stepIdx].actions[subIdx];
+  if(targetType==='fixture'){sa.fixture=sa.fixture||(hwConfig.fixtures||[])[0]?.id||'';delete sa.group;}
+  else {sa.group=sa.group||(hwConfig.fixture_groups||[])[0]?.id||'';delete sa.fixture;}
+  sa.channels={};bldrExpandedIdx=stepIdx;bldrRenderSteps();
+}
+function bldrParallelSubSFId(stepIdx, subIdx, targetType, newId){
+  const sa=bldr.actions[stepIdx].actions[subIdx];
+  if(targetType==='fixture'){sa.fixture=newId;delete sa.group;}
+  else{sa.group=newId;delete sa.fixture;}
+  sa.channels={};bldrExpandedIdx=stepIdx;bldrRenderSteps();
+}
+function bldrParallelSubSFCh(stepIdx, subIdx, chName, val){
+  const sa=bldr.actions[stepIdx].actions[subIdx];
+  if(!sa.channels) sa.channels={};
+  sa.channels[chName]=Math.max(0,Math.min(255,val));
+}
+
+// ── Color list helpers (for group_flash) ──────────────────────────────────────
+function bldrColorListAdd(idx, key){
+  const a = bldr.actions[idx];
+  if(!Array.isArray(a[key])) a[key] = [[255,255,255]];
+  a[key].push([255,255,255]);
+  bldrExpandedIdx = idx;
+  bldrRenderSteps();
+}
+
+function bldrColorListRemove(idx, key, colorIdx){
+  const a = bldr.actions[idx];
+  if(Array.isArray(a[key]) && a[key].length > 1){
+    a[key].splice(colorIdx, 1);
+  }
+  bldrExpandedIdx = idx;
+  bldrRenderSteps();
+}
+
+function bldrColorListSet(idx, key, colorIdx, hex, readonlyInput){
+  const a = bldr.actions[idx];
+  if(!Array.isArray(a[key])) a[key] = [];
+  a[key][colorIdx] = hexToRgb(hex);
+  if(readonlyInput) readonlyInput.value = rgbStr(hexToRgb(hex));
+  const card=$('bldr-steps').querySelectorAll('.bldr-step')[idx];
+  if(card){const def=ACT[a.type]||{};const sumEl=card.querySelector('.bldr-step-summary');if(sumEl)sumEl.textContent=bldrStepSummary(a,def);}
+}
+
+// ── Set Fixture form ──────────────────────────────────────────────────────────
+function sfGetProfileForFixture(fid){
+  const f=(hwConfig.fixtures||[]).find(fx=>fx.id===fid);
+  if(!f) return null;
+  return setupProfiles.find(p=>p.id===f.profile)||null;
+}
+
+function sfGetChannelsForTarget(targetType, targetId){
+  if(targetType==='fixture'){
+    const prof=sfGetProfileForFixture(targetId);
+    return prof?Object.keys(prof.channels||{}).sort():[];
+  }
+  const group=(hwConfig.fixture_groups||[]).find(g=>g.id===targetId);
+  if(!group) return [];
+  const chs=new Set();
+  (group.fixture_ids||[]).forEach(fid=>{
+    const prof=sfGetProfileForFixture(fid);
+    if(prof) Object.keys(prof.channels||{}).forEach(ch=>chs.add(ch));
+  });
+  return [...chs].sort();
+}
+
+function bldrSetFixtureFormHTML(action, idx){
+  const targetType = action.group ? 'group' : 'fixture';
+  const targetId = action.fixture||action.group||'';
+  const channels = sfGetChannelsForTarget(targetType, targetId);
+  const chanVals = action.channels||{};
+
+  const fixtureOpts = (hwConfig.fixtures||[]).map(f=>`<option value="${f.id}" ${f.id===targetId&&targetType==='fixture'?'selected':''}>${f.name||f.id}</option>`).join('');
+  const groupOpts = (hwConfig.fixture_groups||[]).map(g=>`<option value="${g.id}" ${g.id===targetId&&targetType==='group'?'selected':''}>${g.name||g.id}</option>`).join('');
+  const targetSelectHTML = targetType==='fixture'
+    ? `<select onchange="bldrSFSetId(${idx},'fixture',this.value)">${fixtureOpts||'<option value="">— no fixtures —</option>'}</select>`
+    : `<select onchange="bldrSFSetId(${idx},'group',this.value)">${groupOpts||'<option value="">— no groups —</option>'}</select>`;
+
+  const channelsHTML = channels.length ? channels.map(ch=>`
+    <div class="bldr-field">
+      <label>${ch}</label>
+      <div style="display:flex;align-items:center;gap:6px">
+        <input type="range" min="0" max="255" value="${chanVals[ch]??0}" style="flex:1"
+          oninput="bldrSFSetChannel(${idx},'${ch}',+this.value,this.nextElementSibling)">
+        <input type="number" min="0" max="255" value="${chanVals[ch]??0}" style="width:52px"
+          oninput="bldrSFSetChannel(${idx},'${ch}',+this.value,null,this.previousElementSibling)">
+      </div>
+    </div>`).join('')
+    : `<div class="bldr-field" style="grid-column:1/-1"><span style="color:var(--muted);font-size:11px">Select a fixture or group to see its channels.</span></div>`;
+
+  return `<div class="bldr-step-form">
+    <div class="bldr-field">
+      <label>CONTROL</label>
+      <div class="toggle-pill">
+        <button class="${targetType==='fixture'?'active':''}" onclick="bldrSFSetTarget(${idx},'fixture')">Single Fixture</button>
+        <button class="${targetType==='group'?'active':''}" onclick="bldrSFSetTarget(${idx},'group')">Group</button>
+      </div>
+    </div>
+    <div class="bldr-field">
+      <label>${targetType==='fixture'?'FIXTURE':'GROUP'}</label>
+      ${targetSelectHTML}
+    </div>
+    ${channelsHTML}
+    <div class="bldr-field">
+      <label>FADE (ms, 0=instant)</label>
+      <input type="number" min="0" value="${action.fade_ms||0}" oninput="bldrSetProp(${idx},'fade_ms',+this.value)">
+    </div>
+  </div>`;
+}
+
+function bldrSFSetTarget(idx, targetType){
+  const a=bldr.actions[idx];
+  if(targetType==='fixture'){a.fixture=a.fixture||(hwConfig.fixtures||[])[0]?.id||'';delete a.group;}
+  else {a.group=a.group||(hwConfig.fixture_groups||[])[0]?.id||'';delete a.fixture;}
+  a.channels={};bldrExpandedIdx=idx;bldrRenderSteps();
+}
+
+function bldrSFSetId(idx, targetType, newId){
+  const a=bldr.actions[idx];
+  if(targetType==='fixture'){a.fixture=newId;delete a.group;}
+  else {a.group=newId;delete a.fixture;}
+  a.channels={};bldrExpandedIdx=idx;bldrRenderSteps();
+}
+
+function bldrSFSetChannel(idx, chName, val, readonlyEl, rangeEl){
+  if(!bldr.actions[idx].channels) bldr.actions[idx].channels={};
+  bldr.actions[idx].channels[chName]=Math.max(0,Math.min(255,val));
+  if(readonlyEl) readonlyEl.value=val;
+  if(rangeEl) rangeEl.value=val;
+  const card=$('bldr-steps').querySelectorAll('.bldr-step')[idx];
+  if(card){const def=ACT[bldr.actions[idx].type]||{};const sumEl=card.querySelector('.bldr-step-summary');if(sumEl)sumEl.textContent=bldrStepSummary(bldr.actions[idx],def);}
+}
+
+// ── Group Effect form ─────────────────────────────────────────────────────────
+function bldrGroupEffectFormHTML(action, idx){
+  const effect=action.effect||'flash';
+  const groups=hwConfig.fixture_groups||[];
+  const grpOpts=groups.map(g=>`<option value="${g.id}" ${g.id===action.group?'selected':''}>${g.name||g.id}</option>`).join('');
+
+  let effectFields='';
+  if(effect==='flash'){
+    const colors=Array.isArray(action.colors)?action.colors:[[255,255,255]];
+    const pickers=colors.map((c,ci)=>`
+      <span style="display:inline-flex;flex-direction:column;align-items:center;gap:1px">
+        <input type="color" value="${colorToHex(Array.isArray(c)?c:[255,255,255])}"
+          style="width:30px;height:28px;padding:1px;cursor:pointer" title="Color ${ci+1}"
+          oninput="bldrGEColorSet(${idx},${ci},this.value)">
+        ${colors.length>1?`<button style="font-size:8px;color:var(--red);background:none;border:none;cursor:pointer;padding:0;line-height:1" onclick="bldrGEColorRemove(${idx},${ci})">✕</button>`:'<span style="font-size:8px;color:transparent">·</span>'}
+      </span>`).join('');
+    effectFields=`
+      <div class="bldr-field" style="grid-column:1/-1">
+        <label>COLORS (cycles per flash)</label>
+        <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:4px">
+          ${pickers}
+          <button style="width:30px;height:28px;font-size:14px;color:var(--muted);background:none;border:1px dashed var(--border);border-radius:3px;cursor:pointer"
+            onclick="bldrGEColorAdd(${idx})" title="Add color">+</button>
+        </div>
+      </div>
+      <div class="bldr-field"><label>TOTAL FLASHES</label><input type="number" min="1" value="${action.count||15}" oninput="bldrSetProp(${idx},'count',+this.value)"></div>
+      <div class="bldr-field"><label>ON TIME (ms)</label><input type="number" min="1" value="${action.on_ms||200}" oninput="bldrSetProp(${idx},'on_ms',+this.value)"></div>
+      <div class="bldr-field"><label>OFF TIME (ms)</label><input type="number" min="1" value="${action.off_ms||200}" oninput="bldrSetProp(${idx},'off_ms',+this.value)"></div>`;
+  } else if(effect==='solid'){
+    const c=Array.isArray(action.color)?action.color:[255,255,255];
+    effectFields=`<div class="bldr-field" style="grid-column:1/-1">
+      <label>COLOR</label>
+      <div class="bldr-field-row"><input type="color" value="${colorToHex(c)}" oninput="bldrSetColorProp(${idx},'color',this.value,this.nextElementSibling)"><input type="text" value="${rgbStr(c)}" readonly style="color:var(--muted);flex:1"></div>
+    </div>`;
+  } else if(effect==='chase'){
+    const c=Array.isArray(action.color)?action.color:[255,255,255];
+    effectFields=`
+      <div class="bldr-field" style="grid-column:1/-1">
+        <label>COLOR</label>
+        <div class="bldr-field-row"><input type="color" value="${colorToHex(c)}" oninput="bldrSetColorProp(${idx},'color',this.value,this.nextElementSibling)"><input type="text" value="${rgbStr(c)}" readonly style="color:var(--muted);flex:1"></div>
+      </div>
+      <div class="bldr-field"><label>DURATION (s)</label><input type="number" step="0.5" min="0.5" value="${action.duration_ms||5}" oninput="bldrSetProp(${idx},'duration_ms',+this.value)"></div>
+      <div class="bldr-field"><label>SPEED (ms/step)</label><input type="number" min="10" value="${action.speed_ms||100}" oninput="bldrSetProp(${idx},'speed_ms',+this.value)"></div>`;
+  }
+
+  return `<div class="bldr-step-form">
+    <div class="bldr-field">
+      <label>GROUP</label>
+      <select onchange="bldrSetProp(${idx},'group',this.value)"><option value="" ${!action.group?'selected':''}>— select group —</option>${grpOpts}</select>
+    </div>
+    <div class="bldr-field">
+      <label>EFFECT</label>
+      <select onchange="bldrGESetEffect(${idx},this.value)">
+        <option value="flash" ${effect==='flash'?'selected':''}>Flash</option>
+        <option value="solid" ${effect==='solid'?'selected':''}>Solid Color</option>
+        <option value="chase" ${effect==='chase'?'selected':''}>Chase</option>
+      </select>
+    </div>
+    ${effectFields}
+  </div>`;
+}
+
+function bldrGESetEffect(idx, effect){
+  bldr.actions[idx].effect=effect;
+  if(effect==='flash'&&!bldr.actions[idx].colors) bldr.actions[idx].colors=[[255,255,255]];
+  if((effect==='solid'||effect==='chase')&&!bldr.actions[idx].color) bldr.actions[idx].color=[255,255,255];
+  bldrExpandedIdx=idx;bldrRenderSteps();
+}
+function bldrGEColorAdd(idx){
+  if(!Array.isArray(bldr.actions[idx].colors)) bldr.actions[idx].colors=[[255,255,255]];
+  bldr.actions[idx].colors.push([255,255,255]);
+  bldrExpandedIdx=idx;bldrRenderSteps();
+}
+function bldrGEColorRemove(idx,ci){
+  if((bldr.actions[idx].colors||[]).length>1){bldr.actions[idx].colors.splice(ci,1);bldrExpandedIdx=idx;bldrRenderSteps();}
+}
+function bldrGEColorSet(idx,ci,hex){
+  if(!Array.isArray(bldr.actions[idx].colors)) bldr.actions[idx].colors=[];
+  bldr.actions[idx].colors[ci]=hexToRgb(hex);
+}
+
+// ── Step picker ───────────────────────────────────────────────────────────────
+const PICKER_TYPES = [
+  'set_fixture','group_effect','parallel',
+  'set_relay','wait',
+  'pixel_chase','pixel_scene','pixel_off',
+  'set_flag','clear_flag',
+  'blackout',
+  'set_dmx_scene','fade_dmx_scene','dmx_flash',
+];
+
+function bldrShowPicker(btn){
+  const picker = $('bldr-picker');
+  if(picker.style.display!=='none'){picker.style.display='none';return}
+  picker.innerHTML = `<div class="bldr-picker">${
+    PICKER_TYPES.map(k=>{const v=ACT[k]||{icon:'❓',col:'--muted',label:k};return`
+      <div class="bldr-picker-item" onclick="bldrAddStep('${k}')">
+        <span>${v.icon}</span>
+        <span style="color:var(${v.col});font-weight:500">${v.label}</span>
+      </div>`;}).join('')
+  }</div>`;
+  picker.style.display='';
+}
+
+function bldrAddStep(type){
+  $('bldr-picker').style.display='none';
+  const def = ACT[type]||{};
+  const defaults = {};
+  (def.fields||[]).forEach(f=>{if(f.def!==undefined)defaults[f.k]=f.def});
+  // Pre-fill relay/scene dropdowns with first available option
+  if(type==='set_relay'&&hwConfig.relay_outputs.length) defaults.relay=hwConfig.relay_outputs[0].id;
+  if((type==='set_dmx_scene'||type==='fade_dmx_scene')&&knownScenes.length) defaults.scene=knownScenes[0];
+  if(type==='dmx_flash'&&knownScenes.length){defaults.scene='white_flash';defaults.return_scene='blackout'}
+  if(type==='parallel') defaults.actions=[];
+  if(type==='group_flash'&&!defaults.colors) defaults.colors=[[255,255,255]];
+  // New unified types
+  if(type==='group_effect'){
+    defaults.effect='flash';
+    defaults.group=(hwConfig.fixture_groups||[])[0]?.id||'';
+    defaults.colors=[[255,255,255]];defaults.count=15;defaults.on_ms=200;defaults.off_ms=200;
+  }
+  if(type==='set_fixture'){
+    defaults.fixture=(hwConfig.fixtures||[])[0]?.id||'';
+    defaults.channels={};defaults.fade_ms=0;
+  }
+  bldr.actions.push({type, ...defaults});
+  bldrExpandedIdx = bldr.actions.length-1;
+  bldrRenderSteps();
+}
+
+// ── Save ──────────────────────────────────────────────────────────────────────
+function bldrMapAction(a){
+  const def = ACT[a.type];
+  // Virtual types with _toAction (set_flag, clear_flag)
+  if(def?._toAction) return def._toAction(a);
+  // Virtual types with _map (fog_on, cold_spark_high, etc.)
+  if(def?._map) return {...def._map};
+  // parallel: recursively map sub-actions
+  if(a.type==='parallel'){
+    return {type:'parallel', actions: (a.actions||[]).map(bldrMapParallelSubAction)};
+  }
+  // group_effect: map to underlying engine types
+  if(a.type==='group_effect'){
+    const ef = a.effect||'flash';
+    if(ef==='flash') return {type:'group_flash', group:a.group, colors:a.colors||[[255,255,255]], count:a.count||15, on_ms:a.on_ms||200, off_ms:a.off_ms||200};
+    if(ef==='solid') return {type:'group_color', group:a.group, color:a.color||[255,255,255]};
+    if(ef==='chase') return {type:'group_chase', group:a.group, color:a.color||[255,255,255], duration_ms:(a.duration_ms||5)*1000, speed_ms:a.speed_ms||100};
+  }
+  // set_fixture: pass through (real engine type)
+  if(a.type==='set_fixture'){
+    const {_hold_s, _restore_scene, ...rest}=a;
+    return rest;
+  }
+  // pixel_chase / group_chase: convert duration from seconds to ms
+  if(a.type==='pixel_chase'){
+    const {_hold_s, _restore_scene, ...rest}=a;
+    return {...rest, duration_ms: (rest.duration_ms||3)*1000};
+  }
+  if(a.type==='group_chase'){
+    const {_hold_s, _restore_scene, ...rest}=a;
+    return {...rest, duration_ms: (rest.duration_ms||5)*1000};
+  }
+  // Strip builder-internal fields
+  const {_hold_s, _restore_scene, ...rest}=a;
+  return rest;
+}
+
+function bldrMapParallelSubAction(sa){
+  const def = ACT[sa.type];
+  if(def?._toAction) return def._toAction(sa);
+  if(def?._map) return {...def._map};
+  if(sa.type==='group_effect'){
+    const {delay_ms, effect: ef='flash', ...rest} = sa;
+    const base = ef==='flash' ? {type:'group_flash', group:rest.group, colors:rest.colors||[[255,255,255]], count:rest.count||15, on_ms:rest.on_ms||200, off_ms:rest.off_ms||200}
+      : ef==='solid' ? {type:'group_color', group:rest.group, color:rest.color||[255,255,255]}
+      : {type:'group_chase', group:rest.group, color:rest.color||[255,255,255], duration_ms:(rest.duration_ms||5)*1000, speed_ms:rest.speed_ms||100};
+    return delay_ms ? {...base, delay_ms} : base;
+  }
+  if(sa.type==='set_fixture'){const {_hold_s,...rest}=sa;return rest;}
+  if(sa.type==='pixel_chase') return {...sa, duration_ms: (sa.duration_ms||3)*1000};
+  if(sa.type==='group_chase') return {...sa, duration_ms: (sa.duration_ms||5)*1000};
+  return {...sa};
+}
+
+async function bldrSave(){
+  const name = $('bldr-name').value.trim();
+  if(!name){flash($('bldr-msg'),'Scene name required',false);return}
+  if(!bldr.actions.length){flash($('bldr-msg'),'Add at least one step',false);return}
+
+  // Build trigger condition
+  let condition = null;
+  if(bldr.triggerType==='gpio_changed'){
+    const cfg = bldr.triggerCfg;
+    condition = `event.active == ${cfg.active} and event.pin_id == '${cfg.pin_id}'`;
+  } else if(bldr.triggerType==='operator_trigger'){
+    condition = `event.trigger_id == '${bldr.triggerCfg.trigger_id}'`;
+  }
+  // Append flag requirement
+  if(bldr.requireFlag){
+    condition = (condition ? condition + ' and ' : '') + `vars.get('${bldr.requireFlag}', False)`;
+  }
+
+  // Expand actions: virtual types + hold/restore
+  const actions = [];
+  for(const a of bldr.actions){
+    const def = ACT[a.type]||{};
+    const mapped = bldrMapAction(a);
+    actions.push(mapped);
+    // If hold is set and type supports restore, append wait + restore
+    if(def._hold && def._restore && a._hold_s && +a._hold_s > 0){
+      actions.push({type:'wait', duration_ms: Math.round(+a._hold_s * 1000)});
+      const restoreVirtual = def._restore(a);
+      actions.push(bldrMapAction({...restoreVirtual, type: restoreVirtual.type}));
+    }
+  }
+
+  const payload = {
+    id: bldr.id,
+    name,
+    description: $('bldr-desc').value.trim(),
+    trigger: {event: bldr.triggerType, condition},
+    actions,
+    priority: +$('bldr-priority').value||10,
+    cooldown_ms: +$('bldr-cooldown').value||1000,
+  };
+
+  try{
+    const r = await api('POST','/api/routines',payload);
+    if(r.ok){
+      bldr.id = r.id;
+      flash($('bldr-msg'),`Saved "${name}"`,true);
+      bldrLoadLibrary();
+      // Sync live tab — engine reloaded on server, update JS cue list too
+      try{const cr=await fetch('/api/cues');renderCues((await cr.json()).cues||[]);}catch{}
+    } else flash($('bldr-msg'),r.detail||'Save failed',false);
+  }catch(e){flash($('bldr-msg'),e.message,false)}
+}
+
+// ── Flag helpers ──────────────────────────────────────────────────────────────
+function getKnownFlags(){
+  const flags = new Set();
+  for(const cue of cues){
+    for(const a of cue.actions||[]){
+      if(a.type==='set_var'&&a.name) flags.add(a.name);
+    }
+  }
+  for(const k of Object.keys(snap.engine?.vars||{})) flags.add(k);
+  return [...flags].sort();
+}
+
+function updateFlagSelect(){
+  const flags = getKnownFlags();
+  // Update trigger dropdown
+  const sel = $('bldr-flag-select');
+  if(sel){
+    const cur = bldr.requireFlag||'';
+    const hasCustom = cur && !flags.includes(cur);
+    sel.innerHTML =
+      `<option value="" ${!cur?'selected':''}>— always fire (no flag check) —</option>` +
+      flags.map(f=>`<option value="${f}" ${f===cur?'selected':''}>${f}</option>`).join('') +
+      (hasCustom?`<option value="${cur}" selected>${cur} (custom)</option>`:'');
+  }
+  // Update datalist for step inputs
+  const dl = $('known-flags-list');
+  if(dl) dl.innerHTML = flags.map(f=>`<option value="${f}">`).join('');
+}
+
+function bldrSetFlag(val){
+  bldr.requireFlag = val;
+  updateFlagSelect();
+}
+
+function bldrFlagStepSelect(sel, idx, key){
+  const input = sel.nextElementSibling; // the text input immediately after the select
+  if(sel.value==='__custom__'){
+    input.style.display='';
+    input.focus();
+    bldrSetProp(idx, key, input.value.trim()||'');
+  } else {
+    input.style.display='none';
+    bldrSetProp(idx, key, sel.value);
+  }
+}
+
+
+// ══ SETUP TAB ════════════════════════════════════════════════════════════════
+
+async function setupLoad(){
+  try{
+    const [setupR, profilesR] = await Promise.all([
+      fetch('/api/setup'), fetch('/api/profiles')
+    ]);
+    const sd = await setupR.json();
+    const pd = await profilesR.json();
+    setupData = {
+      fixtures: sd.fixtures||[],
+      fixture_groups: sd.fixture_groups||[],
+      gpio_inputs: sd.gpio_inputs||[],
+      relay_outputs: sd.relay_outputs||[],
+    };
+    setupProfiles = pd.profiles||[];
+    // Sync groups and fixtures into hwConfig so the builder can use them immediately
+    hwConfig.fixture_groups = setupData.fixture_groups;
+    hwConfig.fixtures = setupData.fixtures; // keep full fixture data (incl. universe/address)
+    setupRenderAll();
+    manualRender();
+    renderFixtureViz(snap.universes||{});
+    // Populate profile select in add-fixture form
+    const profSel = $('nf-profile');
+    if(profSel){
+      profSel.innerHTML = setupProfiles.map(p=>
+        `<option value="${p.id}">${p.name} (${p.channel_count}ch)</option>`
+      ).join('');
+      setupUpdateChPreview();
+    }
+  }catch(e){console.warn('Setup load error',e)}
+}
+
+function setupRenderAll(){
+  setupRenderFixtures();
+  setupRenderGroups();
+  setupRenderGroupFixtureCheckboxes();
+  setupRenderGPIO();
+  setupRenderRelays();
+}
+
+function setupRenderFixtures(){
+  const el=$('setup-fixtures-list');
+  if(!el) return;
+  if(!setupData.fixtures.length){
+    el.innerHTML='<div class="empty">No fixtures configured — add one below.</div>';
+    return;
+  }
+  const thStyle='text-align:left;padding:5px 8px;color:var(--muted);font-size:10px;font-weight:600;border-bottom:1px solid var(--border)';
+  const tdStyle='padding:5px 8px;border-bottom:1px solid #d8dce8';
+  el.innerHTML=`<table style="width:100%;border-collapse:collapse;font-size:12px">
+    <thead><tr>
+      <th style="${thStyle}">ID</th><th style="${thStyle}">Name</th>
+      <th style="${thStyle}">Profile</th><th style="${thStyle}">Univ</th>
+      <th style="${thStyle}">Addr</th><th style="${thStyle}">End Ch</th><th></th>
+    </tr></thead>
+    <tbody>${setupData.fixtures.map((f,i)=>{
+      const prof=setupProfiles.find(p=>p.id===f.profile);
+      const endCh=prof?f.address+prof.channel_count-1:'?';
+      const conflict=fixtureChannelConflict(f,i);
+      const rowStyle=conflict?'background:rgba(207,58,58,.06)':'';
+      const addrStyle=conflict?`${tdStyle};text-align:center;color:var(--red);font-weight:600`:`${tdStyle};text-align:center`;
+      const conflictTip=conflict?` title="Overlaps with ${conflict.name}"` :'';
+      return `<tr style="${rowStyle}">
+        <td style="${tdStyle};font-family:monospace">${f.id}</td>
+        <td style="${tdStyle}">${f.name}</td>
+        <td style="${tdStyle};color:var(--blue);font-size:11px">${f.profile}</td>
+        <td style="${tdStyle};text-align:center">${f.universe}</td>
+        <td style="${addrStyle}"${conflictTip}>${f.address}${conflict?' ⚠':''}</td>
+        <td style="${tdStyle};text-align:center;color:var(--muted)">${endCh}</td>
+        <td style="padding:4px;border-bottom:1px solid #d8dce8;white-space:nowrap">
+          <button class="btn-icon btn-sm" style="color:var(--blue)" onclick="setupEditFixture(${i})" title="Edit">✎</button>
+          <button class="btn-icon btn-sm" style="color:var(--red)" onclick="setupDeleteFixture(${i})" title="Delete">✕</button>
+        </td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table>`;
+}
+
+function setupRenderGPIO(){
+  const el=$('setup-gpio-list');
+  if(!el) return;
+  if(!setupData.gpio_inputs.length){
+    el.innerHTML='<div class="empty">No GPIO inputs — add one below.</div>';
+    return;
+  }
+  el.innerHTML=setupData.gpio_inputs.map((g,i)=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px">
+      <span style="font-family:monospace;min-width:90px">${g.id}</span>
+      <span style="color:var(--muted);font-size:11px;min-width:52px">BCM ${g.pin}</span>
+      ${g.active_low?`<span style="font-size:9px;background:rgba(59,91,219,.1);color:var(--blue);padding:1px 5px;border-radius:3px;flex-shrink:0">pull-up</span>`:''}
+      <span style="flex:1;font-size:11px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${g.description||''}</span>
+      <button class="btn-icon btn-sm" style="color:var(--blue);flex-shrink:0" onclick="setupEditGPIO(${i})" title="Edit">✎</button>
+      <button class="btn-icon btn-sm" style="color:var(--red);flex-shrink:0" onclick="setupDeleteGPIO(${i})" title="Delete">✕</button>
+    </div>`).join('');
+}
+
+function setupRenderRelays(){
+  const el=$('setup-relay-list');
+  if(!el) return;
+  if(!setupData.relay_outputs.length){
+    el.innerHTML='<div class="empty">No relay outputs — add one below.</div>';
+    return;
+  }
+  el.innerHTML=setupData.relay_outputs.map((r,i)=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px">
+      <span style="font-family:monospace;min-width:90px">${r.id}</span>
+      <span style="color:var(--muted);font-size:11px;min-width:72px">${r.pin>0?'BCM '+r.pin:'simulated'}</span>
+      <span style="flex:1;font-size:11px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.description||''}</span>
+      <button class="btn-icon btn-sm" style="color:var(--blue);flex-shrink:0" onclick="setupEditRelay(${i})" title="Edit">✎</button>
+      <button class="btn-icon btn-sm" style="color:var(--red);flex-shrink:0" onclick="setupDeleteRelay(${i})" title="Delete">✕</button>
+    </div>`).join('');
+}
+
+function setupCancelEdit(){
+  setupEditFixtureIdx=null; setupEditGPIOIdx=null; setupEditRelayIdx=null;
+  const nfBtn=$('nf-add-btn'); if(nfBtn) nfBtn.textContent='+ Add';
+  const ngBtn=$('ng-add-btn'); if(ngBtn) ngBtn.textContent='+ Add';
+  const nrBtn=$('nr-add-btn'); if(nrBtn) nrBtn.textContent='+ Add';
+  [$('nf-id'),$('ng-id'),$('nr-id')].forEach(el=>{if(el){el.readOnly=false;el.style.opacity=''}});
+}
+
+function setupEditFixture(i){
+  const f=setupData.fixtures[i];
+  $('nf-id').value=f.id; $('nf-id').readOnly=true; $('nf-id').style.opacity='0.5';
+  $('nf-name').value=f.name;
+  $('nf-profile').value=f.profile;
+  $('nf-universe').value=f.universe;
+  $('nf-address').value=f.address;
+  setupEditFixtureIdx=i;
+  $('nf-add-btn').textContent='Update Fixture';
+  setupRenderFixtures();
+}
+
+function setupEditGPIO(i){
+  const g=setupData.gpio_inputs[i];
+  $('ng-id').value=g.id; $('ng-id').readOnly=true; $('ng-id').style.opacity='0.5';
+  $('ng-pin').value=g.pin;
+  $('ng-desc').value=g.description||'';
+  $('ng-active-low').checked=g.active_low;
+  setupEditGPIOIdx=i;
+  $('ng-add-btn').textContent='Update Input';
+  setupRenderGPIO();
+}
+
+function setupEditRelay(i){
+  const r=setupData.relay_outputs[i];
+  $('nr-id').value=r.id; $('nr-id').readOnly=true; $('nr-id').style.opacity='0.5';
+  $('nr-pin').value=r.pin;
+  $('nr-desc').value=r.description||'';
+  setupEditRelayIdx=i;
+  $('nr-add-btn').textContent='Update Relay';
+  setupRenderRelays();
+}
+
+function fixtureChannelConflict(fixture, excludeIdx){
+  const prof=setupProfiles.find(p=>p.id===fixture.profile);
+  if(!prof) return null;
+  const start=fixture.address, end=fixture.address+prof.channel_count-1;
+  return setupData.fixtures.find((f,i)=>{
+    if(i===excludeIdx) return false;
+    if(f.universe!==fixture.universe) return false;
+    const fp=setupProfiles.find(p=>p.id===f.profile);
+    if(!fp) return false;
+    return start<=f.address+fp.channel_count-1 && end>=f.address;
+  })||null;
+}
+
+function setupUpdateChPreview(){
+  const el=$('nf-ch-preview');
+  if(!el) return;
+  const profile=$('nf-profile').value;
+  const address=parseInt($('nf-address').value)||1;
+  const universe=parseInt($('nf-universe').value)||1;
+  const prof=setupProfiles.find(p=>p.id===profile);
+  if(!prof){el.textContent='';return;}
+  const end=address+prof.channel_count-1;
+  const excludeIdx=setupEditFixtureIdx??-1;
+  const conflict=fixtureChannelConflict({profile,universe,address},excludeIdx);
+  if(conflict){
+    const cp=setupProfiles.find(p=>p.id===conflict.profile);
+    const ce=conflict.address+(cp?.channel_count||1)-1;
+    el.textContent=`ch ${address}–${end} ⚠ overlaps "${conflict.name}" (ch ${conflict.address}–${ce})`;
+    el.style.color='var(--red)';
+  } else {
+    el.textContent=`ch ${address}–${end}`;
+    el.style.color='var(--muted)';
+  }
+}
+
+function setupAddFixture(){
+  const id=$('nf-id').value.trim();
+  const name=$('nf-name').value.trim();
+  const profile=$('nf-profile').value;
+  const universe=parseInt($('nf-universe').value)||1;
+  const address=parseInt($('nf-address').value)||1;
+  if(!id||!profile){flash($('setup-msg'),'ID and profile are required',false);return}
+  const excludeIdx=setupEditFixtureIdx!==null?setupEditFixtureIdx:-1;
+  const conflict=fixtureChannelConflict({profile,universe,address},excludeIdx);
+  if(conflict){
+    const cp=setupProfiles.find(p=>p.id===conflict.profile);
+    const ce=conflict.address+(cp?.channel_count||1)-1;
+    flash($('setup-msg'),`Channel conflict: overlaps with "${conflict.name}" (ch ${conflict.address}–${ce})`,false);
+    return;
+  }
+  if(setupEditFixtureIdx!==null){
+    setupData.fixtures[setupEditFixtureIdx]={id,name:name||id,profile,universe,address};
+    setupCancelEdit();
+    $('nf-id').value='';$('nf-name').value='';$('nf-address').value=String(address);
+  } else {
+    if(setupData.fixtures.find(f=>f.id===id)){flash($('setup-msg'),`ID "${id}" already exists`,false);return}
+    setupData.fixtures.push({id,name:name||id,profile,universe,address});
+    $('nf-id').value='';$('nf-name').value='';
+    // Suggest next non-overlapping address
+    const prof=setupProfiles.find(p=>p.id===profile);
+    $('nf-address').value=String(prof?address+prof.channel_count:address+1);
+  }
+  setupRenderFixtures();
+  setupUpdateChPreview();
+}
+
+function setupAddGPIO(){
+  const id=$('ng-id').value.trim();
+  const pin=parseInt($('ng-pin').value)||0;
+  const desc=$('ng-desc').value.trim();
+  const activeLow=$('ng-active-low').checked;
+  if(!id){flash($('setup-msg'),'GPIO ID is required',false);return}
+  if(!pin){flash($('setup-msg'),'BCM pin number is required',false);return}
+  if(setupEditGPIOIdx!==null){
+    setupData.gpio_inputs[setupEditGPIOIdx]={id,pin,pull:activeLow?'up':'none',active_low:activeLow,debounce_ms:20,description:desc};
+    setupCancelEdit();
+  } else {
+    if(setupData.gpio_inputs.find(g=>g.id===id)){flash($('setup-msg'),`ID "${id}" already exists`,false);return}
+    setupData.gpio_inputs.push({id,pin,pull:activeLow?'up':'none',active_low:activeLow,debounce_ms:20,description:desc});
+  }
+  setupRenderGPIO();
+  $('ng-id').value='';$('ng-pin').value='';$('ng-desc').value='';$('ng-active-low').checked=false;
+}
+
+function setupAddRelay(){
+  const id=$('nr-id').value.trim();
+  const pin=parseInt($('nr-pin').value)||0;
+  const desc=$('nr-desc').value.trim();
+  if(!id){flash($('setup-msg'),'Relay ID is required',false);return}
+  if(setupEditRelayIdx!==null){
+    setupData.relay_outputs[setupEditRelayIdx]={id,pin,active_low:false,description:desc};
+    setupCancelEdit();
+  } else {
+    if(setupData.relay_outputs.find(r=>r.id===id)){flash($('setup-msg'),`ID "${id}" already exists`,false);return}
+    setupData.relay_outputs.push({id,pin,active_low:false,description:desc});
+  }
+  setupRenderRelays();
+  $('nr-id').value='';$('nr-pin').value='0';$('nr-desc').value='';
+}
+
+function setupDeleteFixture(i){
+  if(setupEditFixtureIdx===i) setupCancelEdit();
+  setupData.fixtures.splice(i,1);
+  setupRenderFixtures();
+  setupRenderGroupFixtureCheckboxes();
+}
+function setupDeleteGPIO(i){
+  if(setupEditGPIOIdx===i) setupCancelEdit();
+  setupData.gpio_inputs.splice(i,1);
+  setupRenderGPIO();
+}
+function setupDeleteRelay(i){
+  if(setupEditRelayIdx===i) setupCancelEdit();
+  setupData.relay_outputs.splice(i,1);
+  setupRenderRelays();
+}
+
+// ── Fixture Groups ─────────────────────────────────────────────────────────────
+function setupRenderGroups(){
+  const el=$('setup-groups-list');
+  if(!el) return;
+  if(!setupData.fixture_groups.length){
+    el.innerHTML='<div class="empty">No groups defined — add one below.</div>';
+    return;
+  }
+  el.innerHTML=setupData.fixture_groups.map((g,i)=>{
+    const chips=(g.fixture_ids||[]).map(fid=>{
+      const fx=setupData.fixtures.find(f=>f.id===fid);
+      return `<span style="background:var(--border);padding:2px 7px;border-radius:10px;font-size:10px;font-family:monospace">${fx?fx.name:fid}</span>`;
+    }).join('');
+    return `<div style="display:flex;align-items:flex-start;gap:8px;padding:7px 0;border-bottom:1px solid var(--border)">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:600">${g.name} <span style="font-weight:400;font-size:10px;color:var(--muted);font-family:monospace">${g.id}</span></div>
+        ${g.description?`<div style="font-size:10px;color:var(--muted);margin-top:1px">${g.description}</div>`:''}
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:5px">${chips||'<span style="font-size:10px;color:var(--muted)">(no fixtures)</span>'}</div>
+      </div>
+      <button class="btn-icon btn-sm" style="color:var(--blue);flex-shrink:0" onclick="setupEditGroup(${i})" title="Edit">✎</button>
+      <button class="btn-icon btn-sm" style="color:var(--red);flex-shrink:0" onclick="setupDeleteGroup(${i})" title="Delete">✕</button>
+    </div>`;
+  }).join('');
+}
+
+function setupRenderGroupFixtureCheckboxes(){
+  const el=$('ngrp-fixtures');
+  if(!el) return;
+  const group = setupEditGroupIdx!==null ? setupData.fixture_groups[setupEditGroupIdx] : null;
+  const checkedIds = new Set(group?.fixture_ids||[]);
+  if(!setupData.fixtures.length){
+    el.innerHTML='<span style="font-size:10px;color:var(--muted)">Add fixtures first</span>';
+    return;
+  }
+  el.innerHTML=setupData.fixtures.map(f=>`
+    <label style="display:flex;align-items:center;gap:5px;font-size:11px;cursor:pointer;padding:3px 6px;background:var(--card);border-radius:4px;border:1px solid var(--border)">
+      <input type="checkbox" value="${f.id}" ${checkedIds.has(f.id)?'checked':''}>
+      <span style="font-family:monospace;font-size:10px;color:var(--muted)">${f.id}</span>
+      <span>${f.name}</span>
+    </label>`).join('');
+}
+
+function setupEditGroup(i){
+  const g=setupData.fixture_groups[i];
+  $('ngrp-id').value=g.id; $('ngrp-id').readOnly=true; $('ngrp-id').style.opacity='0.5';
+  $('ngrp-name').value=g.name;
+  $('ngrp-desc').value=g.description||'';
+  setupEditGroupIdx=i;
+  $('ngrp-add-btn').textContent='Update Group';
+  $('ngrp-cancel-btn').style.display='';
+  $('ngrp-form-title').textContent='Edit group';
+  setupRenderGroups();
+  setupRenderGroupFixtureCheckboxes();
+}
+
+function setupCancelGroupEdit(){
+  setupEditGroupIdx=null;
+  $('ngrp-id').value=''; $('ngrp-id').readOnly=false; $('ngrp-id').style.opacity='';
+  $('ngrp-name').value=''; $('ngrp-desc').value='';
+  $('ngrp-add-btn').textContent='+ Add Group';
+  $('ngrp-cancel-btn').style.display='none';
+  $('ngrp-form-title').textContent='Add group';
+  setupRenderGroupFixtureCheckboxes();
+}
+
+function setupAddGroup(){
+  const id=$('ngrp-id').value.trim();
+  const name=$('ngrp-name').value.trim();
+  const desc=$('ngrp-desc').value.trim();
+  if(!id||!name){flash($('setup-msg'),'Group ID and name are required',false);return}
+  const fixture_ids=[...$('ngrp-fixtures').querySelectorAll('input[type=checkbox]:checked')].map(cb=>cb.value);
+  if(setupEditGroupIdx!==null){
+    setupData.fixture_groups[setupEditGroupIdx]={id,name,fixture_ids,description:desc};
+    setupCancelGroupEdit();
+  } else {
+    if(setupData.fixture_groups.find(g=>g.id===id)){flash($('setup-msg'),`Group ID "${id}" already exists`,false);return}
+    setupData.fixture_groups.push({id,name,fixture_ids,description:desc});
+    $('ngrp-id').value='';$('ngrp-name').value='';$('ngrp-desc').value='';
+    setupRenderGroupFixtureCheckboxes();
+  }
+  setupRenderGroups();
+}
+
+function setupDeleteGroup(i){
+  if(setupEditGroupIdx===i) setupCancelGroupEdit();
+  setupData.fixture_groups.splice(i,1);
+  setupRenderGroups();
+}
+
+async function setupSave(){
+  try{
+    const r=await api('POST','/api/setup',setupData);
+    if(r.ok){
+      const note=r.persisted?'Saved & applied.':'Applied (config write failed: '+r.warning+')';
+      flash($('setup-msg'),note,r.persisted);
+      // Refresh GPIO sim buttons and relay buttons from new config
+      renderGPIOSim();
+      // Sync groups and fixtures into hwConfig so builder reflects the saved state
+      hwConfig.fixture_groups = setupData.fixture_groups;
+      hwConfig.fixtures = setupData.fixtures.map(f=>({id:f.id,name:f.name,profile:f.profile}));
+      // Also refresh the full hwConfig from server (picks up any server-side changes)
+      try{const c=await(await fetch('/api/config')).json();Object.assign(hwConfig,c);}catch(_){}
+    } else flash($('setup-msg'),r.detail||'Save failed',false);
+  }catch(e){flash($('setup-msg'),e.message,false)}
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+(async function init(){
+  try{
+    const [stateR,cuesR,cfgR]=await Promise.all([
+      fetch('/api/state'),fetch('/api/cues'),fetch('/api/config')
+    ]);
+    applySnapshot(await stateR.json());
+    renderCues((await cuesR.json()).cues||[]);
+    hwConfig = await cfgR.json();
+    buildRPiPins(hwConfig);
+  }catch(e){console.warn('Init error:',e)}
+  bldrRenderTrigger();
+  bldrRenderSteps();
+  bldrLoadLibrary();
+  await setupLoad();
+  connectWS();
+  startPoll();
+})();
+</script>
+<datalist id="known-flags-list"></datalist>
+</body>
+</html>

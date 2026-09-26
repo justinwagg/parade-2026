@@ -1,0 +1,20 @@
+# SHEHDS 450W Cold Spark Machine
+# Source: cold_spark.pdf, p.5-6
+# DMX support: yes, 1 channel
+# Set onboard Mode → DMX to enable DMX control.
+# Machine requires 3-4 minute preheat before sparks will fire.
+# The READY indicator (green) must be lit before DMX will produce sparks.
+
+- id: shehds_cold_spark_450w
+  name: "SHEHDS 450W Cold Spark Machine"
+  source: "cold_spark.pdf, p.5-6"
+  channel_count: 1
+  channels:
+    intensity: 1  # 0-9=no function (dead zone), 10-255=sparks on low to high
+  notes: >
+    Single-channel DMX control. CH1 values 0-9 produce no output (dead zone).
+    CH1 values 10-255 activate sparks; higher values increase intensity and height
+    (max spray height 2-4m at full value). Machine must be in DMX mode via onboard
+    menu (Mode → DMX) and fully preheated (READY indicator green, ~3-4 min) before
+    any DMX value will produce sparks. Do not exceed 60g powder capacity.
+    Safety distance: 2m from audience, 1m from nozzle, no flammables within 1m radius.

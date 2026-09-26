@@ -1,0 +1,12 @@
+- id: performer_ready
+  name: Performer Ready
+  description: Sets flag indicating that phone booth is populated
+  trigger:
+    event: gpio_changed
+    condition: event.active == true and event.pin_id == 'performer_button'
+  actions:
+  - type: set_var
+    name: performer_is_ready
+    value: true
+  priority: 10
+  cooldown_ms: 1000.0
