@@ -6,6 +6,8 @@ Show-control platform for an elaborate parade float. Coordinates DMX lighting, N
 
 **Milestone 1 complete** — Mac → Ethernet → Chauvet DMX-AN2 → one DMX fixture. Simulated GPIO, web dashboard, cue engine all working.
 
+**Milestone 2 in progress** — real Raspberry Pi drivers for GPIO inputs, the motor relay and NeoPixels, plus e-stop monitoring. Wiring the control box: follow [docs/WIRING_GUIDE.md](docs/WIRING_GUIDE.md). See [docs/STATUS.md](docs/STATUS.md).
+
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full system design and [docs/DECISIONS.md](docs/DECISIONS.md) for architectural decision records.
 
 ---
@@ -82,6 +84,19 @@ The node IP defaults to `2.0.0.1` (Chauvet DMX-AN2 factory default). If you've c
 
 Restart `parade` — it begins sending Art-Net at 40 Hz immediately.
 
+### GPIO, relay and NeoPixels (on the Pi)
+
+1. `bash scripts/pi-setup.sh`, then `sudo reboot` (installs `lgpio`/`spidev`, enables SPI).
+2. Wire each device and check it with the bench tool (service stopped). Step by step: [docs/WIRING_GUIDE.md](docs/WIRING_GUIDE.md).
+   ```bash
+   .venv/bin/parade-hwcheck inputs          # watch switches
+   .venv/bin/parade-hwcheck relay           # relay ON 2 s (refuses if e-stop pressed)
+   .venv/bin/parade-hwcheck pixels test     # colour test + chase
+   ```
+3. Set the matching driver to `rpi` in `config/default.yaml` (`gpio_driver`, `relay_driver`, `pixel_driver`; independent of each other).
+
+Pin map and wiring rules: [docs/HARDWARE.md](docs/HARDWARE.md). Safety behaviour (e-stop, relay safe states): [docs/SAFETY.md](docs/SAFETY.md).
+
 ---
 
 ## Repository layout
@@ -95,6 +110,11 @@ cues/
 docs/
   ARCHITECTURE.md     # system design and component diagram
   DECISIONS.md        # architectural decision records
+  WIRING_GUIDE.md     # step-by-step control-box wiring with tests
+  HARDWARE.md         # pin map, drivers, bench tool
+  SAFETY.md           # e-stop and relay safety layers
+  HARDWARE_SETUP_CHECKLIST.md  # power, relay & NeoPixel background checklist
+  BOM.md              # parts to buy for the control box
   PROJECT_SPEC.md     # requirements and milestone plan
 fixture_profiles/
   rockville/
@@ -103,9 +123,12 @@ hardware/
   manuals/            # manufacturer PDFs (authoritative for hardware behavior)
 src/parade/
   config/             # Pydantic models, YAML loader
-  core/               # event bus, state machine, show engine
+  core/               # event bus, state machine, show engine, safety monitor
   dmx/                # universe buffer, Art-Net sender, fixtures, scenes
-  gpio/               # GPIO interface + simulated implementation
+  gpio/               # GPIO interface + simulated and lgpio implementations
+  relay/              # relay interface + simulated and lgpio implementations
+  pixels/             # NeoPixel interface + simulated and SPI implementations
+  tools/hwcheck.py    # parade-hwcheck bench tool
   api/                # FastAPI routes, WebSocket push, static dashboard
   main.py             # entry point, wiring
 tests/
@@ -121,9 +144,10 @@ tests/
 ```yaml
 hardware:
   dmx_driver: simulated   # "simulated" | "artnet"
-  gpio_driver: simulated  # "simulated" | "rpi" (Milestone 2+)
-  pixel_driver: simulated # "simulated" | "rpi" (Milestone 2+)
-  relay_driver: simulated # "simulated" | "rpi" (Milestone 2+)
+  gpio_driver: simulated  # "simulated" | "rpi" (lgpio)
+  pixel_driver: simulated # "simulated" | "rpi" (SPI on GPIO10)
+  relay_driver: simulated # "simulated" | "rpi" (lgpio)
+  gpio_chip: 0            # /dev/gpiochipN (0 on a Pi 3)
 
 network:
   artnet_nodes:
@@ -193,7 +217,11 @@ Available action types: `set_dmx_scene`, `fade_dmx_scene`, `wait`, `blackout`.
 |---|---|---|
 | Chauvet DMX-AN2 | Art-Net → DMX node | Default IP `2.0.0.1`, port 6454, 2-universe |
 | Rockville RockWedge LED | DMX fixture | RGBWA+UV, 6ch or 10ch mode |
-| Turntable index microswitch | GPIO input | Triggers cues on each rotation |
-| Raspberry Pi (Milestone 2+) | Show controller | GPIO, NeoPixels, relays |
+| Turntable index microswitch | GPIO17 (NC) | Cuts the motor relay and triggers the show cue |
+| Performer button | GPIO27 (NO) | Sets `performer_is_ready` |
+| E-stop | Mains NC contact + GPIO22 monitor | Hardware cut; software goes to EMERGENCY STOP |
+| Relay module | GPIO18 | Switches the rotation motor (see WIRING_GUIDE Part 7) |
+| WS2812B NeoPixels | GPIO10 (SPI) via level shifter | 50 px |
+| Raspberry Pi 3 Model B | Show controller | GPIO, NeoPixels, relays |
 
 Fixture channel maps are in [fixture_profiles/](fixture_profiles/). All channel data comes from manufacturer manuals in [hardware/manuals/](hardware/manuals/).

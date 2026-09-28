@@ -473,6 +473,8 @@ On emergency stop (via monitored GPIO or software trigger):
 
 Recovery from EMERGENCY_STOP requires explicit manual operator action (UI button or physical reset), not an automatic timer.
 
+Implemented as `SafetyMonitor` in `src/parade/core/safety.py`, which also owns operator state transitions (the dashboard's state buttons go through it). See [SAFETY.md](SAFETY.md).
+
 **Critical distinction:** Software monitors and responds to the e-stop condition. The physical e-stop circuit is a normally-closed loop that removes power from show loads directly, independent of software. See SAFETY.md for the hardware architecture.
 
 ---

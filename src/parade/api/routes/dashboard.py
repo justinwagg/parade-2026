@@ -14,6 +14,7 @@ def state_snapshot(ctx: AppContext) -> dict:
     return {
         "system_state": ctx.state_machine.state.value,
         "armed": ctx.state_machine.armed,
+        "estop_active": ctx.safety.estop_active if ctx.safety else False,
         "timestamp": time.time(),
         "universes": {
             str(uid): {str(ch): val for ch, val in u.get_all_channels().items()}
@@ -28,6 +29,7 @@ def state_snapshot(ctx: AppContext) -> dict:
         ],
         "relays": ctx.relay_manager.get_all_states(),
         "pixels": [list(p) for p in ctx.pixel_manager.get_all_pixels()],
+        "power": ctx.power_monitor.snapshot() if ctx.power_monitor else None,
         "engine": {
             "active_cue": ctx.show_engine.active_cue,
             "active_step": ctx.show_engine.active_step,
@@ -43,11 +45,20 @@ async def api_get_state(ctx: AppContext = Depends(get_ctx)):
     return state_snapshot(ctx)
 
 
+@router.get("/api/power/history")
+async def api_power_history(ctx: AppContext = Depends(get_ctx)):
+    """Rolling ~10 min of power/thermal samples for the dashboard chart."""
+    return ctx.power_monitor.history() if ctx.power_monitor else []
+
+
 @router.post("/api/state/{new_state}")
 async def api_set_state(new_state: str, ctx: AppContext = Depends(get_ctx)):
     try:
         s = SystemState(new_state.upper())
-        old, new = ctx.state_machine.transition(s)
+        if ctx.safety:
+            old, new = await ctx.safety.transition(s)
+        else:
+            old, new = ctx.state_machine.transition(s)
         return {"ok": True, "old_state": old.value, "new_state": new.value}
     except (ValueError, StateTransitionError) as e:
         raise HTTPException(400, str(e))

@@ -103,6 +103,64 @@ body{
 .conn-dot.err{background:var(--red)}
 #conn-label{font-size:11px;color:var(--muted)}
 
+.power-ind{
+  margin-left:auto;display:inline-flex;align-items:center;gap:5px;cursor:pointer;
+  font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px;white-space:nowrap;
+  letter-spacing:.5px;text-transform:uppercase;
+  background:var(--raised);color:var(--muted);border:1px solid var(--border);
+  transition:background .3s,color .3s;
+}
+.power-ind.ok  {background:rgba(45,158,117,.1);color:var(--green);border-color:rgba(45,158,117,.3)}
+.power-ind.warn{background:rgba(196,125,0,.1);color:var(--yellow);border-color:rgba(196,125,0,.3)}
+.power-ind.bad {background:rgba(207,58,58,.15);color:var(--red);border-color:rgba(207,58,58,.4);animation:blink .9s infinite}
+#header .power-ind + .conn-indicator{margin-left:12px}
+
+/* ── Pi Health card ── */
+#card-power{flex-shrink:0}
+.pw-meta{font-size:10px;color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0;font-family:ui-monospace,Menlo,monospace}
+.pw-banner{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:var(--radius-sm);
+  border:1px solid var(--border);background:var(--raised)}
+.pw-banner .pw-icon{font-size:22px;line-height:1;width:28px;text-align:center;flex-shrink:0;color:var(--muted)}
+.pw-banner .pw-label{font-size:17px;font-weight:700;letter-spacing:.4px;color:var(--text)}
+.pw-banner .pw-desc{font-size:12px;color:var(--text);opacity:.8;margin-top:2px;line-height:1.4}
+.pw-banner.ok  {background:rgba(45,158,117,.08);border-color:rgba(45,158,117,.35)}
+.pw-banner.ok .pw-icon{color:var(--green)}
+.pw-banner.warn{background:rgba(196,125,0,.08);border-color:rgba(196,125,0,.4)}
+.pw-banner.warn .pw-icon{color:var(--yellow)}
+.pw-banner.bad {background:rgba(207,58,58,.1);border-color:rgba(207,58,58,.5)}
+.pw-banner.bad .pw-icon{color:var(--red);animation:blink .9s infinite}
+.pw-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:8px}
+.pw-tile{background:var(--raised);border:1px solid var(--border);border-left:3px solid var(--border-hi);
+  border-radius:var(--radius-sm);padding:8px 10px;min-width:0}
+.pw-tile.ok{border-left-color:var(--green)}
+.pw-tile.warn{border-left-color:var(--yellow)}
+.pw-tile.bad{border-left-color:var(--red)}
+.pw-tile .pw-k{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);display:flex;align-items:center;gap:4px}
+.pw-tile .pw-v{font-size:20px;font-weight:700;color:var(--text);margin-top:2px;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pw-tile .pw-s{font-size:10px;color:var(--muted);margin-top:2px;line-height:1.35}
+.pw-dot{width:7px;height:7px;border-radius:50%;display:inline-block;flex-shrink:0;background:var(--border-hi)}
+.pw-dot.ok{background:var(--green)}.pw-dot.warn{background:var(--yellow)}.pw-dot.bad{background:var(--red)}
+.pw-lower{display:grid;grid-template-columns:minmax(0,1fr) 230px;gap:14px;align-items:start}
+@media(max-width:900px){.pw-lower{grid-template-columns:1fr}}
+.pw-sub{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);margin-bottom:6px}
+#pw-chart{position:relative;min-height:170px}
+#pw-chart svg{display:block;width:100%;height:170px;touch-action:pan-y}
+#pw-chart .pw-empty{font-size:12px;color:var(--muted);padding:40px 0;text-align:center}
+.pw-tip{position:absolute;pointer-events:none;background:var(--card);border:1px solid var(--border-hi);border-radius:var(--radius-sm);
+  box-shadow:var(--shadow-md);padding:6px 8px;font-size:11px;color:var(--text);white-space:nowrap;z-index:5;line-height:1.5}
+.pw-tip b{font-variant-numeric:tabular-nums}
+.pw-legend{display:flex;flex-wrap:wrap;gap:12px;font-size:10px;color:var(--muted);margin-top:4px}
+.pw-legend span{display:inline-flex;align-items:center;gap:4px}
+.pw-sw{width:10px;height:6px;border-radius:1px;display:inline-block}
+.pw-flags{width:100%;border-collapse:collapse;font-size:11px}
+.pw-flags th{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);text-align:left;padding:4px 6px;border-bottom:1px solid var(--border)}
+.pw-flags td{padding:5px 6px;border-bottom:1px solid var(--border);color:var(--text)}
+.pw-flags td.pw-c{white-space:nowrap}
+.pw-flags .pw-no{color:var(--muted)}
+.pw-counts{font-size:11px;color:var(--text);margin-top:8px;line-height:1.6}
+.pw-counts .pw-s{color:var(--muted)}
+.pw-note{font-size:10px;color:var(--muted);line-height:1.45;border-top:1px solid var(--border);padding-top:8px}
+
 /* ── State info bar ── */
 #state-info-bar{
   background:rgba(238,240,248,.92);
@@ -236,6 +294,7 @@ button.btn-icon:hover:not(:disabled){background:var(--overlay);border-color:var(
 .tag-operator{background:rgba(196,125,0,.1);color:var(--yellow)}
 .tag-system  {background:rgba(112,72,232,.1);color:var(--purple)}
 .tag-error   {background:rgba(207,58,58,.1);color:var(--red)}
+.tag-power   {background:rgba(196,125,0,.1);color:var(--yellow)}
 .log-msg{color:var(--text);font-size:11px}
 
 /* ── GPIO pin strip ── */
@@ -497,6 +556,7 @@ hr.div{border:none;border-top:1px solid var(--border);margin:6px 0}
   <div id="state-transitions" style="margin-left:8px"></div>
   <span id="state-msg" style="font-size:11px;min-width:120px"></span>
 
+  <span id="power-ind" class="power-ind" title="Pi power status" onclick="showPowerDetails()">PWR n/a</span>
   <div class="conn-indicator">
     <div class="conn-dot" id="conn-dot"></div>
     <span id="conn-label">connecting</span>
@@ -557,6 +617,37 @@ hr.div{border:none;border-top:1px solid var(--border);margin:6px 0}
 
     <!-- Right column: output -->
     <div id="live-output-col">
+
+      <!-- Pi Health: power & thermal -->
+      <div class="card" id="card-power">
+        <div class="card-title" style="justify-content:space-between">
+          <span><span class="ct-icon">🔋</span>Pi Health — Power &amp; Thermal</span>
+          <span class="pw-meta" id="pw-meta"></span>
+        </div>
+        <div class="pw-banner" id="pw-banner">
+          <span class="pw-icon" id="pw-icon">…</span>
+          <div><div class="pw-label" id="pw-label">Waiting for data</div><div class="pw-desc" id="pw-desc"></div></div>
+        </div>
+        <div class="pw-tiles" id="pw-tiles"></div>
+        <div class="pw-lower">
+          <div>
+            <div class="pw-sub">CPU temperature &amp; power events — last 10 min</div>
+            <div id="pw-chart"><div class="pw-empty">Collecting samples…</div></div>
+            <div class="pw-legend">
+              <span><span class="pw-sw" style="background:var(--blue);height:2px"></span>CPU °C</span>
+              <span><span class="pw-sw" style="background:var(--red)"></span>Under-voltage</span>
+              <span><span class="pw-sw" style="background:var(--yellow)"></span>Throttled</span>
+              <span>- - 70° warn · 80° throttle</span>
+            </div>
+          </div>
+          <div>
+            <div class="pw-sub">Firmware flags</div>
+            <table class="pw-flags" id="pw-flags"></table>
+            <div class="pw-counts" id="pw-counts"></div>
+          </div>
+        </div>
+        <div class="pw-note">The Pi 3 has no supply voltmeter, only an alarm when voltage falls below ~4.63&nbsp;V. For actual volts, measure at the Pi's power input with a multimeter. “Since boot” flags only clear on reboot; event counts cover this app session.</div>
+      </div>
 
       <!-- Routine Progress -->
       <div class="card" id="card-progress">
@@ -876,7 +967,7 @@ const STATE_INFO = {
                    hint:'Resume with RUNNING, or drop to SAFE to go dark. Useful for holding a look during a show pause.',
                    cls:'sp-PAUSED'},
   EMERGENCY_STOP: {desc:'EMERGENCY STOP — all show activity halted immediately.',
-                   hint:'All cues have been cancelled. Reset to SAFE when it is safe to do so. Hardware outputs hold their last state.',
+                   hint:'All cues have been cancelled and relays switched off. Reset to SAFE when it is safe to do so. NeoPixels and DMX hold their last look.',
                    cls:'sp-EMERGENCY_STOP'},
   FAULT:          {desc:'System fault detected. Check the event log for details.',
                    hint:'Something went wrong during operation. Review the log on the Live tab, resolve the issue, then reset to SAFE.',
@@ -967,8 +1058,206 @@ document.querySelectorAll('.tab').forEach(t=>{
 });
 
 // ── Apply state snapshot ──────────────────────────────────────────────────────
+const PW_TEXT={
+  'OK':{icon:'✓',label:'Power OK',desc:'Supply is above 4.63 V and the CPU is running unrestricted. No problems since boot.'},
+  'UNDER-VOLTAGE':{icon:'⚠',label:'Under-voltage now',desc:'Supply at the Pi is below ~4.63 V right now. Check voltage at the Pi, wire gauge and connections. Expect glitches or a reset.'},
+  'THROTTLED':{icon:'⚠',label:'CPU throttled now',desc:'The firmware is slowing the CPU right now (see flags). Usually heat or low supply voltage.'},
+  'OVERHEAT':{icon:'🌡',label:'Overheating',desc:'CPU is at or above 80 °C and the firmware is throttling. Improve ventilation in the control box.'},
+  'DIP SINCE BOOT':{icon:'⚠',label:'Voltage dipped since boot',desc:'Supply fell below ~4.63 V at some point since boot. It is fine now. Check the chart and event log for when. Clears on reboot.'},
+  'THROTTLED SINCE BOOT':{icon:'⚠',label:'Throttled since boot',desc:'The CPU was slowed at some point since boot. It is fine now. Usually heat or supply. Clears on reboot.'},
+  'WARM':{icon:'🌡',label:'CPU warm',desc:'CPU is at or above 70 °C and approaching the 80 °C throttle point. Improve airflow in the control box.'},
+  'n/a':{icon:'—',label:'Not available',desc:'Not running on a Raspberry Pi, so power monitoring is unavailable.'},
+};
+let powerHistory=[];
+let powerLastTs=0;
+
+function pwAgo(ts){
+  if(!ts) return 'never';
+  const s=Math.max(0,Math.round((Date.now()-ts)/1000));
+  if(s<60) return s+'s ago';
+  if(s<3600) return Math.floor(s/60)+'m '+(s%60)+'s ago';
+  return Math.floor(s/3600)+'h '+Math.floor(s%3600/60)+'m ago';
+}
+function pwDur(sec){
+  if(sec==null) return '—';
+  sec=Math.floor(sec);
+  const d=Math.floor(sec/86400),h=Math.floor(sec%86400/3600),m=Math.floor(sec%3600/60);
+  return d?`${d}d ${h}h`:h?`${h}h ${m}m`:`${m}m ${sec%60}s`;
+}
+function pwClock(ts){return new Date(ts).toTimeString().slice(0,8)}
+
+async function loadPowerHistory(){
+  try{
+    const r=await fetch('/api/power/history');
+    powerHistory=await r.json();
+    powerLastTs=powerHistory.length?powerHistory[powerHistory.length-1].ts:0;
+    renderPowerChart();
+  }catch{}
+}
+
+function applyPower(p){
+  // Header pill (visible from every tab)
+  const el=$('power-ind');
+  if(el){
+    if(!p){el.className='power-ind';el.textContent='PWR n/a';el.title='Pi power status'}
+    else{
+      const temp=p.temp_c!=null?` · ${Math.round(p.temp_c)}°C`:'';
+      el.className='power-ind '+p.level;
+      el.textContent=`PWR ${p.label}${temp}`;
+      el.title=p.details.join('\n');
+    }
+  }
+  if(p?.sample&&p.sample.ts>powerLastTs){
+    powerHistory.push(p.sample);
+    powerLastTs=p.sample.ts;
+    const cutoff=p.sample.ts-(p.history_s||600)*1000;
+    while(powerHistory.length&&powerHistory[0].ts<cutoff) powerHistory.shift();
+    renderPowerChart();
+  }
+  renderPowerCard(p);
+}
+
+function renderPowerCard(p){
+  if(!$('card-power')) return;
+  const level=p?p.level:'na';
+  const t=PW_TEXT[p?p.label:'n/a']||PW_TEXT['n/a'];
+  $('pw-banner').className='pw-banner '+level;
+  $('pw-icon').textContent=t.icon;
+  $('pw-label').textContent=t.label;
+  $('pw-desc').textContent=t.desc;
+  $('pw-meta').textContent=p&&p.available
+    ?`throttled=${p.raw_throttled??'?'} · sample ${p.sample?pwAgo(p.sample.ts):'—'}`:'';
+  if(!p||!p.available){
+    $('pw-tiles').innerHTML='';$('pw-flags').innerHTML='';$('pw-counts').innerHTML='';
+    return;
+  }
+  const sys=p.system||{}, ses=p.session||{};
+  const tile=(k,v,sub,st)=>`<div class="pw-tile ${st||''}"><div class="pw-k">${st?`<span class="pw-dot ${st}"></span>`:''}${k}</div><div class="pw-v">${v}</div><div class="pw-s">${sub}</div></div>`;
+
+  const supplySt=p.undervoltage_now?'bad':p.undervoltage_since_boot?'warn':'ok';
+  const supplyV=p.undervoltage_now?'LOW NOW':p.undervoltage_since_boot?'Dipped':'OK';
+  const thrNow=p.throttle_now.length>0, thrEver=p.throttle_since_boot.length>0;
+  const thrSt=thrNow?'bad':thrEver?'warn':'ok';
+  const tempSt=p.temp_c==null?'':p.temp_c>=80?'bad':p.temp_c>=70?'warn':'ok';
+  const cpu=sys.cpu_mhz, load=sys.load, mem=sys.memory_mb;
+  const loadPct=load?Math.round(load.load1/load.cores*100):null;
+  const memPct=mem?Math.round(mem.used/mem.total*100):null;
+
+  $('pw-tiles').innerHTML=[
+    tile('Supply',supplyV,`${ses.uv_events||0} dip${ses.uv_events===1?'':'s'} this session<br>last: ${pwAgo(ses.last_uv_ts)}`,supplySt),
+    tile('Throttling',thrNow?'NOW':thrEver?'Earlier':'None',`${ses.throttle_events||0} event${ses.throttle_events===1?'':'s'} this session<br>last: ${pwAgo(ses.last_throttle_ts)}`,thrSt),
+    tile('CPU temp',p.temp_c!=null?p.temp_c.toFixed(1)+' °C':'—',ses.temp_max_c!=null?`session max ${ses.temp_max_c.toFixed(1)} °C<br>at ${pwClock(ses.temp_max_ts)}`:'',tempSt),
+    tile('CPU clock',cpu?cpu.cur+' MHz':'—',cpu?`range ${cpu.min}–${cpu.max} MHz<br>idling at ${cpu.min} is normal`:''),
+    tile('CPU load',loadPct!=null?loadPct+'%':'—',load?`load ${load.load1.toFixed(2)} (1m) · ${load.load5.toFixed(2)} (5m)<br>${load.cores} cores`:''),
+    tile('Memory',memPct!=null?memPct+'%':'—',mem?`${mem.used} / ${mem.total} MB used`:''),
+    tile('Uptime',pwDur(sys.uptime_s),`Pi since boot<br>app ${ses.started_ts?pwDur((Date.now()-ses.started_ts)/1000):'—'}`),
+  ].join('');
+
+  $('pw-flags').innerHTML='<tr><th>Condition</th><th>Now</th><th>Since boot</th></tr>'+p.flags.map(f=>
+    `<tr><td>${f.name}</td>
+      <td class="pw-c">${f.now?'<span class="pw-dot bad"></span> YES':'<span class="pw-no">—</span>'}</td>
+      <td class="pw-c">${f.since_boot?'<span class="pw-dot warn"></span> yes':'<span class="pw-no">—</span>'}</td></tr>`
+  ).join('');
+  $('pw-counts').innerHTML=
+    `Under-voltage events: <b>${ses.uv_events||0}</b> <span class="pw-s">(last ${pwAgo(ses.last_uv_ts)})</span><br>`+
+    `Throttle events: <b>${ses.throttle_events||0}</b> <span class="pw-s">(last ${pwAgo(ses.last_throttle_ts)})</span><br>`+
+    `<span class="pw-s">Session started ${ses.started_ts?pwClock(ses.started_ts):'—'}</span>`;
+}
+
+function renderPowerChart(){
+  const box=$('pw-chart');
+  if(!box) return;
+  const data=powerHistory.filter(d=>d.temp_c!=null);
+  if(data.length<2){box.innerHTML='<div class="pw-empty">Collecting samples…</div>';return}
+  const W=Math.max(box.clientWidth,240), H=170;
+  const m={l:34,r:8,t:8,b:44};
+  const pw=W-m.l-m.r, ph=H-m.t-m.b;
+  const span=(snap?.power?.history_s||600)*1000;
+  const t1=powerHistory[powerHistory.length-1].ts, t0=t1-span;
+  const temps=data.map(d=>d.temp_c);
+  const lo=Math.min(40,Math.floor((Math.min(...temps)-3)/5)*5), hi=Math.max(85,Math.ceil((Math.max(...temps)+3)/5)*5);
+  const x=t=>m.l+(t-t0)/span*pw, y=v=>m.t+(hi-v)/(hi-lo)*ph;
+  const step=Math.max(2,pw/(span/((snap?.power?.poll_s||2)*1000)));
+  const out=[];
+  // grid + y labels
+  for(let v=Math.ceil(lo/10)*10;v<=hi;v+=10){
+    out.push(`<line x1="${m.l}" x2="${W-m.r}" y1="${y(v)}" y2="${y(v)}" stroke="var(--border)" stroke-width="1"/>`);
+    out.push(`<text x="${m.l-6}" y="${y(v)+3}" text-anchor="end" font-size="9" fill="var(--muted)">${v}°</text>`);
+  }
+  // event bands inside plot
+  powerHistory.forEach(d=>{
+    if(d.uv) out.push(`<rect x="${x(d.ts)-step/2}" y="${m.t}" width="${step}" height="${ph}" fill="var(--red)" opacity=".12"/>`);
+  });
+  // thresholds
+  [[70,'var(--yellow)','70° warn'],[80,'var(--red)','80° throttle']].forEach(([v,c,l])=>{
+    if(v<lo||v>hi) return;
+    out.push(`<line x1="${m.l}" x2="${W-m.r}" y1="${y(v)}" y2="${y(v)}" stroke="${c}" stroke-width="1" stroke-dasharray="4 3" opacity=".8"/>`);
+    out.push(`<text x="${W-m.r-2}" y="${y(v)-3}" text-anchor="end" font-size="9" fill="var(--muted)">${l}</text>`);
+  });
+  // temperature line (break across gaps > 3 polls)
+  let path='', prevT=null;
+  data.forEach(d=>{
+    const gap=prevT!=null&&d.ts-prevT>3*(snap?.power?.poll_s||2)*1000;
+    path+=(path===''||gap?'M':'L')+x(d.ts).toFixed(1)+','+y(d.temp_c).toFixed(1);
+    prevT=d.ts;
+  });
+  out.push(`<path d="${path}" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`);
+  // event strips under plot
+  const sy=m.t+ph+6;
+  [['uv','var(--red)','UV',0],['throttle','var(--yellow)','THR',9]].forEach(([k,c,l,off])=>{
+    out.push(`<rect x="${m.l}" y="${sy+off}" width="${pw}" height="6" rx="1" fill="var(--raised)"/>`);
+    out.push(`<text x="${m.l-6}" y="${sy+off+5.5}" text-anchor="end" font-size="8" fill="var(--muted)">${l}</text>`);
+    powerHistory.forEach(d=>{ if(d[k]) out.push(`<rect x="${x(d.ts)-step/2}" y="${sy+off}" width="${step}" height="6" fill="${c}"/>`); });
+  });
+  // x labels every 2 min
+  for(let k=0;k<=span/60000;k+=2){
+    const t=t1-k*60000;
+    out.push(`<text x="${x(t)}" y="${H-6}" text-anchor="${k===0?'end':'middle'}" font-size="9" fill="var(--muted)">${k===0?'now':'-'+k+'m'}</text>`);
+  }
+  // hover layer
+  out.push(`<line id="pw-xh" y1="${m.t}" y2="${sy+15}" stroke="var(--muted)" stroke-width="1" visibility="hidden"/>`);
+  out.push(`<circle id="pw-xd" r="4" fill="var(--blue)" stroke="var(--card)" stroke-width="2" visibility="hidden"/>`);
+  out.push(`<rect id="pw-hit" x="${m.l}" y="0" width="${pw}" height="${H}" fill="transparent"/>`);
+  box.innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="CPU temperature over the last 10 minutes with under-voltage and throttle events">${out.join('')}</svg><div class="pw-tip" id="pw-tip" hidden></div>`;
+
+  const svg=box.querySelector('svg'), tip=$('pw-tip'), xh=$('pw-xh'), xd=$('pw-xd');
+  const move=ev=>{
+    const pt=ev.touches?ev.touches[0]:ev;
+    const r=svg.getBoundingClientRect();
+    const px=(pt.clientX-r.left)*(W/r.width);
+    const tt=t0+(px-m.l)/pw*span;
+    let best=null;
+    for(const d of powerHistory){ if(!best||Math.abs(d.ts-tt)<Math.abs(best.ts-tt)) best=d; }
+    if(!best) return;
+    const bx=x(best.ts);
+    xh.setAttribute('x1',bx);xh.setAttribute('x2',bx);xh.setAttribute('visibility','visible');
+    if(best.temp_c!=null){xd.setAttribute('cx',bx);xd.setAttribute('cy',y(best.temp_c));xd.setAttribute('visibility','visible')}
+    else xd.setAttribute('visibility','hidden');
+    tip.innerHTML=`${pwClock(best.ts)}<br>CPU <b>${best.temp_c!=null?best.temp_c.toFixed(1)+' °C':'—'}</b> · <b>${best.cpu_mhz??'—'}</b> MHz<br>`+
+      `${best.uv?'<span class="pw-dot bad"></span> Under-voltage':'Supply OK'}<br>${best.throttle?'<span class="pw-dot warn"></span> Throttled':'Not throttled'}`;
+    tip.hidden=false;
+    const left=bx/W*r.width;
+    tip.style.left=Math.min(Math.max(0,left+10),r.width-tip.offsetWidth)+'px';
+    tip.style.top='4px';
+  };
+  const leave=()=>{tip.hidden=true;xh.setAttribute('visibility','hidden');xd.setAttribute('visibility','hidden')};
+  const hit=$('pw-hit');
+  hit.addEventListener('mousemove',move);hit.addEventListener('mouseleave',leave);
+  hit.addEventListener('touchstart',move,{passive:true});hit.addEventListener('touchmove',move,{passive:true});
+  hit.addEventListener('touchend',()=>setTimeout(leave,1500));
+}
+window.addEventListener('resize',()=>renderPowerChart());
+
+function showPowerDetails(){
+  const card=$('card-power');
+  if(!card) return;
+  document.querySelector('.tab[data-tab="live"]')?.click();
+  card.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
 function applySnapshot(data){
   snap = data;
+  applyPower(data.power);
   gpioLogical  = data.gpio         || {};
   gpioPhysical = data.gpio_physical|| {};
 
@@ -988,7 +1277,9 @@ function applySnapshot(data){
     sib.className = st==='EMERGENCY_STOP'?'sib-estop':st==='RUNNING'?'sib-running':'';
   }
   if(sibDesc) sibDesc.textContent = info.desc||'';
-  if(sibHint) sibHint.textContent = info.hint||'';
+  if(sibHint) sibHint.textContent = data.estop_active
+    ? 'Physical e-stop is pressed (or its monitor wire is open). Twist to release it before resetting to SAFE.'
+    : (info.hint||'');
 
   // Armed
   const at = $('armed-tag');
@@ -1642,7 +1933,7 @@ function setConn(ok){
 function connectWS(){
   const proto=location.protocol==='https:'?'wss:':'ws:';
   ws=new WebSocket(`${proto}//${location.host}/ws`);
-  ws.onopen=()=>{setConn(true);stopPoll()};
+  ws.onopen=()=>{setConn(true);stopPoll();loadPowerHistory()};
   ws.onmessage=ev=>{
     try{
       const msg=JSON.parse(ev.data);

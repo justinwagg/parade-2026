@@ -1,0 +1,12 @@
+- id: stop_rotation_at_index
+  name: Stop Rotation at Index
+  description: Cuts motor power every time the tabletop reaches the index microswitch
+  trigger:
+    event: gpio_changed
+    condition: event.active == true and event.pin_id == 'rotation_index'
+  actions:
+  - type: set_relay
+    relay: phone_booth_rotation
+    state: false
+  priority: 1
+  cooldown_ms: 0

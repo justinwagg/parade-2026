@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import Literal
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 class SystemConfig(BaseModel):
@@ -13,6 +13,7 @@ class HardwareConfig(BaseModel):
     gpio_driver: Literal["rpi", "simulated"] = "simulated"
     pixel_driver: Literal["rpi", "mcu", "simulated"] = "simulated"
     relay_driver: Literal["rpi", "mcu", "simulated"] = "simulated"
+    gpio_chip: int = 0  # /dev/gpiochipN for the rpi GPIO and relay drivers
 
 
 class ArtNetNodeConfig(BaseModel):
@@ -63,9 +64,10 @@ class RelayOutputConfig(BaseModel):
 
 class PixelStripConfig(BaseModel):
     id: str
-    pin: int = 0  # 0 = unassigned (simulation only)
+    pin: int = 0  # 0 = unassigned (simulation only); rpi driver requires 10 (SPI0 MOSI)
     count: int = Field(ge=1, le=1024)
     strip_type: str = "WS2812B"
+    brightness: float = Field(default=1.0, ge=0.0, le=1.0)  # hardware output scale; caps current draw
     description: str = ""
 
 
@@ -77,7 +79,7 @@ class FixtureGroupConfig(BaseModel):
 
 
 class SafetyConfig(BaseModel):
-    estop_pin: str | None = None
+    estop_pin: str | None = None  # id of the gpio_inputs entry wired to the e-stop monitor contact
     armed_requires_operator: bool = True
 
 
@@ -99,3 +101,10 @@ class Config(BaseModel):
     pixel_strips: list[PixelStripConfig] = []
     safety: SafetyConfig = SafetyConfig()
     web: WebConfig = WebConfig()
+
+    @model_validator(mode="after")
+    def _check_estop_pin(self) -> "Config":
+        pin = self.safety.estop_pin
+        if pin is not None and pin not in {g.id for g in self.gpio_inputs}:
+            raise ValueError(f"safety.estop_pin {pin!r} is not a gpio_inputs id")
+        return self

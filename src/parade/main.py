@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import time
 from pathlib import Path
 import uvicorn
 
@@ -63,6 +64,9 @@ def _build_log_entry(event) -> dict:
     elif et == "system_state_changed":
         msg = f"State: {event.old_state} → {event.new_state}"
         tag = "system"
+    elif et == "emergency_stop":
+        msg = "EMERGENCY STOP: relays off, cues cancelled"
+        tag = "safety"
     else:
         msg = et
         tag = "system"
@@ -108,6 +112,8 @@ async def async_main(
     from parade.core.engine import ShowEngine
     from parade.api.context import AppContext
     from parade.api.app import create_app
+    from parade.health.power import PowerMonitor
+    from parade.core.safety import SafetyMonitor
 
     logger = logging.getLogger(__name__)
 
@@ -148,31 +154,41 @@ async def async_main(
 
     # Build event bus and GPIO
     event_bus = EventBus()
-    if config.hardware.gpio_driver == "simulated":
+    chip = config.hardware.gpio_chip
+    if config.hardware.gpio_driver == "rpi":
+        from parade.gpio.rpi import RPiGPIO
+        gpio = RPiGPIO(config.gpio_inputs, event_bus, chip=chip)
+    else:
         from parade.gpio.simulated import SimulatedGPIO
         gpio = SimulatedGPIO(config.gpio_inputs, event_bus)
-    else:
-        raise NotImplementedError("RPi GPIO not yet implemented")
-    await gpio.start()
 
     # Build relay manager
-    if config.hardware.relay_driver == "simulated":
+    if config.hardware.relay_driver == "rpi":
+        from parade.relay.rpi import RPiRelay
+        relay_manager = RPiRelay(config.relay_outputs, chip=chip)
+    elif config.hardware.relay_driver == "simulated":
         from parade.relay.simulated import SimulatedRelay
         relay_manager = SimulatedRelay(config.relay_outputs)
     else:
-        raise NotImplementedError("RPi relay driver not yet implemented")
-    await relay_manager.start()
+        raise NotImplementedError(f"Relay driver {config.hardware.relay_driver!r} not implemented")
 
     # Build pixel manager
-    if config.hardware.pixel_driver == "simulated":
+    from parade.config.models import PixelStripConfig
+    strip = config.pixel_strips[0] if config.pixel_strips else PixelStripConfig(id="default", count=1)
+    if config.hardware.pixel_driver == "rpi":
+        if not config.pixel_strips:
+            raise ValueError("pixel_driver is 'rpi' but no pixel_strips are configured")
+        from parade.pixels.rpi import RPiPixels
+        pixel_manager = RPiPixels(strip)
+    elif config.hardware.pixel_driver == "simulated":
         from parade.pixels.simulated import SimulatedPixels
-        if config.pixel_strips:
-            pixel_manager = SimulatedPixels(config.pixel_strips[0])
-        else:
-            from parade.config.models import PixelStripConfig
-            pixel_manager = SimulatedPixels(PixelStripConfig(id="default", count=1))
+        pixel_manager = SimulatedPixels(strip)
     else:
-        raise NotImplementedError("RPi pixel driver not yet implemented")
+        raise NotImplementedError(f"Pixel driver {config.hardware.pixel_driver!r} not implemented")
+
+    # Relays first so they are driven off as early as possible.
+    await relay_manager.start()
+    await gpio.start()
     await pixel_manager.start()
 
     # Build state machine
@@ -204,12 +220,18 @@ async def async_main(
         cues_dir=cues_dir,
         config_path=config_path,
         profiles_dir=profiles_dir,
+        power_monitor=PowerMonitor(),
+        safety=SafetyMonitor(
+            event_bus, state_machine, relay_manager, show_engine, gpio,
+            config.safety.estop_pin,
+        ),
     )
 
     # Wire event bus → log queue
     LOG_EVENT_TYPES = [
         "gpio_changed", "operator_trigger", "cue_started",
         "cue_completed", "cue_cancelled", "system_state_changed",
+        "emergency_stop",
     ]
 
     def _make_log_handler(app_ctx_ref):
@@ -228,6 +250,7 @@ async def async_main(
     # Transition to SAFE (boot complete)
     state_machine.transition(SystemState.SAFE)
     logger.info("System state: SAFE")
+    await ctx.safety.start()  # trips immediately if the e-stop is already pressed
 
     # Create FastAPI app
     app = create_app(ctx)
@@ -235,6 +258,11 @@ async def async_main(
     # Start background tasks
     output_task = asyncio.create_task(run_dmx_output_loop(ctx))
     ws_task = asyncio.create_task(push_ws_updates(ctx))
+
+    def _log_power_change(severity: str, msg: str) -> None:
+        ctx.event_log.append({"ts": round(time.time() * 1000), "tag": "power", "msg": msg})
+
+    power_task = asyncio.create_task(ctx.power_monitor.run(_log_power_change))
 
     # Run uvicorn
     server_config = uvicorn.Config(
@@ -251,11 +279,13 @@ async def async_main(
     finally:
         output_task.cancel()
         ws_task.cancel()
-        await dmx_driver.stop()
-        await gpio.stop()
-        await relay_manager.stop()
-        await pixel_manager.stop()
+        power_task.cancel()
+        # Stop cues before hardware so nothing writes to a closed driver.
         await show_engine.stop()
+        await relay_manager.stop()
+        await gpio.stop()
+        await pixel_manager.stop()
+        await dmx_driver.stop()
 
 
 def main() -> None:

@@ -110,6 +110,10 @@ async def post_setup(body: SetupPayload, ctx: AppContext = Depends(get_ctx)):
         logger.warning("Failed to persist config to YAML: %s", e)
         warning = str(e)
 
+    hw = ctx.config.hardware
+    if persisted and "rpi" in (hw.gpio_driver, hw.relay_driver):
+        warning = "Saved. GPIO/relay pin changes take effect after restarting parade (sudo systemctl restart parade)."
+
     result = {"ok": True, "persisted": persisted}
     if warning:
         result["warning"] = warning

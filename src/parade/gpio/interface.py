@@ -17,3 +17,8 @@ class GPIOInterface(ABC):
     def get_all_states(self) -> dict[str, bool]:
         """Return {pin_id: active_state} for all configured pins."""
         ...
+
+    @abstractmethod
+    def get_physical_states(self) -> dict[str, bool]:
+        """Return {pin_id: electrical_level} for all configured pins (True = high)."""
+        ...

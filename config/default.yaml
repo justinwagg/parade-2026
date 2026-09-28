@@ -6,6 +6,7 @@ hardware:
   gpio_driver: simulated
   pixel_driver: simulated
   relay_driver: simulated
+  gpio_chip: 0
 network:
   artnet_nodes:
   - id: main_node
@@ -93,15 +94,21 @@ gpio_inputs:
 - id: rotation_index
   pin: 17
   pull: up
-  active_low: true
+  active_low: false
   debounce_ms: 20
-  description: Turntable index microswitch on phone booth
+  description: Turntable index microswitch (NC to GND; actuated or cut wire reads HIGH = active)
 - id: performer_button
   pin: 27
   pull: up
   active_low: true
   debounce_ms: 50
   description: Momentary button pressed by performer when in position inside booth
+- id: estop_monitor
+  pin: 22
+  pull: up
+  active_low: false
+  debounce_ms: 20
+  description: E-stop monitor contact (NC to GND; pressed or cut wire reads HIGH = active)
 relay_outputs:
 - id: phone_booth_rotation
   pin: 18
@@ -109,12 +116,13 @@ relay_outputs:
   description: Controls phone booth rotation motor (relay open = motor stops)
 pixel_strips:
 - id: main_strip
-  pin: 12
+  pin: 10
   count: 50
   strip_type: WS2812B
+  brightness: 1.0
   description: Main NeoPixel strip on phone booth
 safety:
-  estop_pin: null
+  estop_pin: estop_monitor
   armed_requires_operator: true
 web:
   host: 0.0.0.0

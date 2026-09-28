@@ -51,6 +51,7 @@ class ShowEngine:
         self.active_label: str = ""
         # Shared flag store — set/read by cue actions and trigger conditions
         self._vars: dict = {}
+        self._tasks: set[asyncio.Task] = set()
 
     def _load_cues(self, cues_data: list[dict]) -> None:
         for d in cues_data:
@@ -84,7 +85,17 @@ class ShowEngine:
         logger.info("Show engine started")
 
     async def stop(self) -> None:
+        await self.cancel_all()
         logger.info("Show engine stopped")
+
+    async def cancel_all(self) -> None:
+        """Cancel every running cue and wait for them to unwind."""
+        tasks = [t for t in self._tasks if not t.done()]
+        for t in tasks:
+            t.cancel()
+        if tasks:
+            await asyncio.gather(*tasks, return_exceptions=True)
+            logger.info("Cancelled %d running cue(s)", len(tasks))
 
     def list_cues(self) -> list[dict]:
         return [
@@ -134,7 +145,9 @@ class ShowEngine:
             if not self._evaluate_condition(cue.trigger.condition, event):
                 continue
             cue._last_triggered = now
-            asyncio.create_task(self._execute_cue(cue, event))
+            task = asyncio.create_task(self._execute_cue(cue, event))
+            self._tasks.add(task)
+            task.add_done_callback(self._tasks.discard)
 
     async def _execute_cue(self, cue: CueDef, event) -> None:
         from parade.core.events import CueStartedEvent, CueCompletedEvent, CueCancelledEvent
@@ -237,6 +250,17 @@ class ShowEngine:
             state = bool(p.get("state", False))
             if isinstance(p.get("state"), str):
                 state = p["state"].lower() in ("on", "true", "1", "yes")
+            from parade.core.state import SystemState
+            if (
+                state
+                and self._state_machine is not None
+                and self._state_machine.state != SystemState.RUNNING
+            ):
+                # Turning a relay off is always allowed; on only while RUNNING.
+                logger.warning(
+                    "set_relay %s ON refused: state is %s", relay_id, self._state_machine.state.value
+                )
+                return
             await self._relay_manager.set_relay(relay_id, state)
 
         elif t == "pixel_scene":

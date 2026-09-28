@@ -393,6 +393,35 @@ Single Python process with asyncio concurrency. All subsystems share the same ev
 
 ---
 
+## ADR-015 — Pi Hardware Drivers: lgpio for GPIO/Relays, SPI for NeoPixels
+
+**Status:** Accepted
+**Date:** 2026-09-27
+
+### Context
+
+Milestone 2 needs real drivers for GPIO inputs, relay outputs and WS2812B NeoPixels on a Raspberry Pi 3 running Debian 13. `RPi.GPIO` is deprecated there. The usual NeoPixel library (`rpi_ws281x`) drives PWM on GPIO12/18, which needs root and conflicts with the Pi 3's on-board audio.
+
+### Decision
+
+- GPIO inputs and relays use **`lgpio`** directly (`/dev/gpiochipN`), with kernel-side debounce and edge callbacks handed to the asyncio loop via `call_soon_threadsafe`.
+- NeoPixels use **SPI0 MOSI (GPIO10) via `spidev`**. Each WS2812 bit is encoded as one SPI byte at ~6.4 MHz; `core_freq=250` pins the Pi 3's SPI clock.
+- Both libraries come from apt (`python3-lgpio`, `python3-spidev`); the venv is created with `--system-site-packages`. They are imported lazily, so macOS development is unaffected.
+
+### Rationale
+
+- lgpio is the maintained Pi GPIO library on current Raspberry Pi OS. gpiozero would only add a layer over it here.
+- SPI needs no root, no DMA channel and no audio changes, and the byte-per-bit encoding ends every byte low, so gaps between SPI bytes are harmless.
+- apt packages avoid building C extensions inside the venv on the Pi.
+
+### Consequences
+
+- The strip must be on GPIO10; GPIO8/9/11 are reserved by SPI0.
+- Strips longer than ~160 pixels need a larger `spidev.bufsiz` kernel parameter.
+- Pending decision P-5 (relay driver hardware) is partly resolved: GPIO18 drives a high-trigger relay module; whether it switches the motor directly or through a contactor depends on the motor data (WIRING_GUIDE Part 7).
+
+---
+
 ## Pending Decisions
 
 The following decisions cannot be made until more hardware information is available.

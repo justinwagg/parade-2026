@@ -15,6 +15,7 @@ dependencies = [
 
 [project.scripts]
 parade = "parade.main:main"
+parade-hwcheck = "parade.tools.hwcheck:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/parade"]
