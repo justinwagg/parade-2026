@@ -12,6 +12,7 @@ _Last reconciled: 2026-09-27._
 
 - **120V wire:** a **16/3 (or 14/3) SJTW/SJOOW, UL-listed, copper (not CCA)** extension cord, stripped for its black/white/green cores (300V insulation). Inside the box only. (1.9)
 - **1000µF ≥10V capacitor** for the strip, if not in hobby stock. (4.3)
+- **Contactor coil suppressor: Schneider LAD4RCU**, or a ~150VAC MOV as a stopgap. Stops the NeoPixel glitch when the contactor switches. (5.3)
 - **Heat-shrink**, if out, for the outlet's spade connectors. (7.4)
 - **Motor fuse:** no purchase expected. Pick **T5A or T6.3A** from the fuse kit once the motor/controller label (or a measured running current) is known. (1.2)
 - Optional: 22 AWG stranded hookup wire for the Pi-side signal runs (18 AWG LED-cable offcuts work if they fit the terminals; WIRING_GUIDE Part 1 "Wire sizes"), 3-light receptacle tester (1.7), Kill A Watt-style meter (5.10), inline GFCI cord if the generator has no GFCI outlets (1.8).
@@ -67,7 +68,7 @@ _Last reconciled: 2026-09-27._
 
 | # | Part | Details | Qty | Status | Guide |
 |---|---|---|---|---|---|
-| 4.1 | WS2812B strip | 50 px in config. | 1 | Have | Part 6 |
+| 4.1 | Adafruit 5163 Ultra Bright 4W RGBW NeoPixel, warm white ~3000K | Chainable modules, JST SM 3-pin each end (pinout differs from other NeoPixel strips: find the data wire with the meter). Config: `strip_type: SK6812RGBW`, `color_order: RGBW`. Up to **0.8 A each** at full: the 5A V2 fuse covers ~6 at full white; inject 5V at the far end too. 6 wired; `count` still 50 until the rest are added. | 6+ | Have | Part 6 |
 | 4.2 | Adafruit Pixel Shifter (74HCT2G34) | 3.3V → 5V data. Power from the strip's 5V; GND shared with Pi and strip. | 2 (1 spare) | Have | Part 6 |
 | 4.3 | 1000µF ≥10V electrolytic | Across the strip's +/− at its input; mind polarity. | 1 | Buy if not in stock | Part 6 |
 | 4.4 | 330Ω resistor | Data line, near the first pixel. | 1 | Have (hobby stock) | Part 6 |
@@ -82,7 +83,7 @@ _Last reconciled: 2026-09-27._
 | 5.1 | E-stop: Schneider XB4BS8445 | 40mm mushroom, push-turn. Ships 1NC (terminals **1–2**, = NC #1, coil circuit) + 1NO (3–4, unused). | 1 | Have | Parts 5, 7 |
 | 5.1b | Schneider ZBE102 NC block | Clips into the free collar position: NC #2, e-stop monitor on GPIO22. | 1 | Have | Part 5 |
 | 5.2 | Contactor: Schneider LC1D09G7 | UL, **½ HP at 115V single-phase**, **120VAC coil** (G7), DIN rail. Pole 1 (1/L1→2/T1) = hot, pole 2 (3/L2→4/T2) = neutral, pole 3 unused, coil A1/A2. Check the coil label says 120V and the printing looks genuine. | 1 | Have | Part 7 |
-| 5.3 | Coil suppressor | Only if the relay board's contacts show wear or the contactor chatters. | 0–1 | Optional | Part 7 |
+| 5.3 | Coil suppressor: **Schneider LAD4RCU** (RC, 110–240VAC) | Clips onto the LC1D09G7's coil terminals **A1/A2**. The coil's switching spike glitches the first NeoPixels (confirmed 2026-10-01: no glitch with the e-stop holding the coil off); the pixel driver's 30 ms resend hides it for now. Stopgap from a local shop: a **~150VAC MOV** (e.g. Littelfuse V150LA10A), or **100Ω ½W + 0.1µF X2 275VAC** in series, across A1/A2. | 1 | Buy | Part 7 |
 | 5.4 | Relay board: HLS8L-DC5V-S-C | High-level trigger (H), **COM→NO**, VCC from fuse-module channel V4 (1A). Switches only the contactor coil (the relay has no motor rating). Pass the 3.3V bench test. | 1 (+2 spare) | Have | Part 7 |
 | 5.5 | Motor outlet: SS-6B NEMA 5-15R snap-in | 15A 125V, spade tabs. Check the panel thickness for the snap-in clips. Identify the hot/neutral/earth tabs with the meter. | 1 (+1 spare) | Have | Part 7 |
 | 5.6 | Outlet connectors | 6.3mm female spades from the crimp kit, with heat-shrink over each so no metal shows. | 3 | Have | Part 7 |

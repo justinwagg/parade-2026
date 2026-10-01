@@ -118,9 +118,10 @@ pixel_strips:
 - id: main_strip
   pin: 10
   count: 50
-  strip_type: WS2812B
+  strip_type: SK6812RGBW
+  color_order: RGBW
   brightness: 1.0
-  description: Main NeoPixel strip on phone booth
+  description: Main NeoPixel chain on phone booth (Adafruit 5163 4W RGBW warm white)
 safety:
   # estop_pin: estop_monitor
   estop_pin: null

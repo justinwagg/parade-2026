@@ -5,7 +5,12 @@ Each WS2812 data bit is sent as one SPI byte at ~6.4 MHz (156 ns per SPI bit,
 for a 0 and 0b11111000 a ~0.8 µs pulse for a 1. Every byte ends low, so any gap
 the SPI controller leaves between bytes only stretches a low period, which the
 pixels tolerate. SPI needs no root and does not clash with the Pi 3's PWM audio.
+
+The last shown frame is resent every REFRESH_S, so a pixel that latches noise
+(e.g. from the contactor coil switching) is corrected within a fraction of a
+second instead of holding the wrong colour until the next show().
 """
+import asyncio
 import logging
 from pathlib import Path
 from parade.pixels.interface import PixelInterface
@@ -15,11 +20,12 @@ logger = logging.getLogger(__name__)
 
 SPI_MOSI_GPIO = 10
 SPI_SPEED_HZ = 6_400_000
+REFRESH_S = 0.03  # ~33 Hz: a coil-switching glitch shows for at most ~30 ms
 _BIT0 = 0b11000000
 _BIT1 = 0b11111000
 # ≥ 300 µs of low after the data latches the frame (newer WS2812B need > 280 µs).
 RESET_BYTES = 240
-_COLOR_ORDER = {"WS2812B": "GRB", "WS2812": "GRB"}
+_COLOR_ORDER = {"WS2812B": "GRB", "WS2812": "GRB", "SK6812RGBW": "GRBW"}
 _SPIDEV_BUFSIZ = Path("/sys/module/spidev/parameters/bufsiz")
 
 # byte value -> 8 SPI bytes, MSB first
@@ -29,18 +35,21 @@ _ENCODE = [bytes(_BIT1 if v & (0x80 >> i) else _BIT0 for i in range(8)) for v in
 def encode_ws2812_spi(
     pixels: list[tuple[int, int, int]], brightness: float = 1.0, order: str = "GRB"
 ) -> bytes:
-    """Encode RGB pixels as an SPI byte stream for WS2812-family strips."""
-    idx = ["RGB".index(c) for c in order]
+    """Encode RGB pixels as an SPI byte stream for WS2812-family strips.
+
+    A "W" in order sends a white byte (always 0 for now) for RGBW pixels.
+    """
+    idx = ["RGBW".index(c) for c in order]
     out = []
     for px in pixels:
         for i in idx:
-            out.append(_ENCODE[int(px[i] * brightness)])
+            out.append(_ENCODE[int(px[i] * brightness)] if i < 3 else _ENCODE[0])
     out.append(bytes(RESET_BYTES))
     return b"".join(out)
 
 
-def frame_size(count: int) -> int:
-    return count * 24 + RESET_BYTES
+def frame_size(count: int, channels: int = 3) -> int:
+    return count * channels * 8 + RESET_BYTES
 
 
 class RPiPixels(PixelInterface):
@@ -52,12 +61,20 @@ class RPiPixels(PixelInterface):
             )
         if strip_config.strip_type not in _COLOR_ORDER:
             raise ValueError(f"Unsupported strip_type {strip_config.strip_type!r}")
-        self._order = _COLOR_ORDER[strip_config.strip_type]
+        order = strip_config.color_order.upper() or _COLOR_ORDER[strip_config.strip_type]
+        if sorted(order) not in (sorted("RGB"), sorted("RGBW")):
+            raise ValueError(
+                f"Pixel strip '{strip_config.id}': color_order must be a permutation of RGB or RGBW (got {order!r})"
+            )
+        self._order = order
+        self._strip_type = strip_config.strip_type
         self._brightness = strip_config.brightness
         self._count = strip_config.count
         self._bus, self._device = bus, device
         self._pixels: list[tuple[int, int, int]] = [(0, 0, 0)] * self._count
         self._spi = None
+        self._frame = b""
+        self._refresh_task: asyncio.Task | None = None
 
     async def start(self) -> None:
         try:
@@ -77,9 +94,10 @@ class RPiPixels(PixelInterface):
             bufsiz = int(_SPIDEV_BUFSIZ.read_text())
         except (OSError, ValueError):
             bufsiz = 4096
-        if frame_size(self._count) > bufsiz:
+        size = frame_size(self._count, len(self._order))
+        if size > bufsiz:
             raise RuntimeError(
-                f"{self._count} pixels need a {frame_size(self._count)}-byte SPI transfer but spidev "
+                f"{self._count} pixels need a {size}-byte SPI transfer but spidev "
                 f"bufsiz is {bufsiz}: add spidev.bufsiz=65536 to /boot/firmware/cmdline.txt and reboot"
             )
         spi = spidev.SpiDev()
@@ -88,14 +106,20 @@ class RPiPixels(PixelInterface):
         spi.mode = 0
         self._spi = spi
         await self.show()  # start dark
+        self._refresh_task = asyncio.create_task(self._refresh())
         logger.info(
-            "RPi pixel driver started: %d x %s on GPIO%d (SPI%d.%d), brightness %.0f%%",
-            self._count, "WS2812B", SPI_MOSI_GPIO, self._bus, self._device, self._brightness * 100,
+            "RPi pixel driver started: %d x %s (%s) on GPIO%d (SPI%d.%d), brightness %.0f%%",
+            self._count, self._strip_type, self._order, SPI_MOSI_GPIO,
+            self._bus, self._device, self._brightness * 100,
         )
 
     async def stop(self) -> None:
         if self._spi is None:
             return
+        task, self._refresh_task = self._refresh_task, None
+        if task:
+            task.cancel()
+            await asyncio.gather(task, return_exceptions=True)
         try:
             await self.set_all(0, 0, 0)
             await self.show()
@@ -119,7 +143,16 @@ class RPiPixels(PixelInterface):
     async def show(self) -> None:
         # ~2 ms for 50 pixels; short enough to write inline on the event loop.
         if self._spi is not None:
-            self._spi.writebytes2(encode_ws2812_spi(self._pixels, self._brightness, self._order))
+            self._frame = encode_ws2812_spi(self._pixels, self._brightness, self._order)
+            self._spi.writebytes2(self._frame)
+
+    async def _refresh(self) -> None:
+        while True:
+            await asyncio.sleep(REFRESH_S)
+            try:
+                self._spi.writebytes2(self._frame)
+            except Exception:
+                logger.exception("Pixel refresh failed")
 
     def get_pixel_count(self) -> int:
         return self._count

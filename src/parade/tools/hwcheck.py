@@ -4,6 +4,7 @@
     parade-hwcheck relay [ID] [--seconds N]   relay ON for N s, then off
     parade-hwcheck pixels test            R, G, B, white, chase, off
     parade-hwcheck pixels color R G B [--seconds N]
+    parade-hwcheck pixels ... --order GRBW    try a colour order without editing the config
 
 Stop the service first (sudo systemctl stop parade); the pins can only be
 claimed by one process. Pin numbers, pulls and polarity come from the config.
@@ -107,12 +108,14 @@ async def check_relay(config, relay_id: str | None, seconds: float) -> None:
         print(f"{relay_id} off", flush=True)
 
 
-async def check_pixels(config, mode: str, color: list[int] | None, seconds: float) -> None:
+async def check_pixels(config, mode: str, color: list[int] | None, seconds: float, order: str | None = None) -> None:
     from parade.pixels.rpi import RPiPixels
 
     if not config.pixel_strips:
         raise SystemExit("No pixel_strips configured")
     strip = config.pixel_strips[0]
+    if order:
+        strip = strip.model_copy(update={"color_order": order})
     px = RPiPixels(strip)
     await px.start()
     try:
@@ -151,6 +154,7 @@ def main() -> None:
     p.add_argument("mode", choices=["test", "color"])
     p.add_argument("rgb", nargs="*", type=int)
     p.add_argument("--seconds", type=float, default=5.0)
+    p.add_argument("--order", help="override color_order, e.g. GRBW or RGBW")
     args = parser.parse_args()
 
     if _service_running():
@@ -165,7 +169,7 @@ def main() -> None:
         else:
             if args.mode == "color" and (len(args.rgb) != 3 or not all(0 <= v <= 255 for v in args.rgb)):
                 raise SystemExit("pixels color needs three values 0-255, e.g. pixels color 255 0 0")
-            asyncio.run(check_pixels(config, args.mode, args.rgb, args.seconds))
+            asyncio.run(check_pixels(config, args.mode, args.rgb, args.seconds, args.order))
     except KeyboardInterrupt:
         pass
     except RuntimeError as e:

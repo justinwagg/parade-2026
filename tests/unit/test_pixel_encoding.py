@@ -28,3 +28,10 @@ def test_every_encoded_byte_ends_low():
     # Gaps between SPI bytes must only ever stretch a low period.
     frame = encode_ws2812_spi([(255, 170, 85)])
     assert all(b & 1 == 0 for b in frame)
+
+
+def test_rgbw_sends_four_bytes_with_white_zero():
+    frame = encode_ws2812_spi([(0xA5, 0x01, 0x80)], order="GRBW")
+    assert len(frame) == 32 + RESET_BYTES
+    g, r, b, w = (frame[i:i + 8] for i in range(0, 32, 8))
+    assert (g, r, b, w) == (_bits(0x01), _bits(0xA5), _bits(0x80), _bits(0))

@@ -125,3 +125,31 @@ def test_pixels_require_spi_pin():
 
     with pytest.raises(ValueError, match="pin must be 10"):
         RPiPixels(PixelStripConfig(id="s", pin=12, count=5))
+
+
+async def test_pixels_resend_last_shown_frame(monkeypatch):
+    import parade.pixels.rpi as rpi
+    from parade.config.models import PixelStripConfig
+
+    class FakeSpi:
+        def __init__(self):
+            self.writes = []
+
+        def writebytes2(self, data):
+            self.writes.append(data)
+
+        def close(self):
+            pass
+
+    monkeypatch.setattr(rpi, "REFRESH_S", 0.01)
+    px = rpi.RPiPixels(PixelStripConfig(id="s", pin=10, count=2, strip_type="SK6812RGBW", color_order="RGBW"))
+    spi = px._spi = FakeSpi()
+    px._refresh_task = asyncio.create_task(px._refresh())
+    await px.set_all(0, 0, 255)
+    await px.show()
+    await px.set_pixel(0, 255, 0, 0)  # buffered but not shown: must not be resent
+    await asyncio.sleep(0.05)
+    shown = rpi.encode_ws2812_spi([(0, 0, 255)] * 2, order="RGBW")
+    assert len(spi.writes) > 2 and all(w == shown for w in spi.writes)
+    await px.stop()
+    assert px._refresh_task is None
