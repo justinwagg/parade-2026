@@ -13,7 +13,7 @@ The rule (ADR-012): **the hardware e-stop is authoritative.** The Pi is the show
 | 2b | **Contactor** (LC1D09G7) opens **hot and neutral** when its coil drops | any of layers 1–2 | No |
 | 3 | **Motor branch fuse** (T5A/T6.3A) and coil fuse (T1A) | motor or wiring fault | No |
 | 4 | **GFCI** at the generator outlet | current leaking to earth (shock) | No |
-| 5 | Software `SafetyMonitor` (`src/parade/core/safety.py`) | e-stop monitor active, or state leaves RUNNING | Yes |
+| 5 | Software `SafetyMonitor` (`src/parade/core/safety.py`) | e-stop monitor active, or state leaves RUNNING or MANUAL | Yes |
 | 6 | `stop_rotation_at_index` cue | tabletop reaches the index microswitch (RUNNING only) | Yes |
 
 Wiring for layers 1–4 is in [WIRING_GUIDE.md](WIRING_GUIDE.md) Part 7.
@@ -26,8 +26,9 @@ Wiring for layers 1–4 is in [WIRING_GUIDE.md](WIRING_GUIDE.md) Part 7.
   3. every running cue cancelled
   4. `emergency_stop` event logged; dashboard banner.
 - **Reset** needs the e-stop released **and** an operator clicking SAFE. Every transition except to `EMERGENCY_STOP` is refused while the monitor reads ACTIVE, including at boot. Releasing the e-stop never restarts anything by itself.
-- **Relays switch on only in RUNNING.** The cue engine refuses `set_relay … state: true` in any other state. Off is always allowed.
+- **Relays switch on only in RUNNING or MANUAL.** The cue engine refuses `set_relay … state: true` outside RUNNING; the dashboard's manual relay buttons (`src/parade/core/manual.py`) refuse it outside MANUAL or while the e-stop is active. Off is always allowed.
 - **Leaving RUNNING** (PAUSED, SAFE, FAULT, EMERGENCY_STOP) drives all relays off. SAFE, FAULT and EMERGENCY_STOP also cancel running cues.
+- **MANUAL** (bench testing) is entered and left only through SAFE. Cues are ignored, so **the index microswitch does not stop the motor**: a relay switched on by hand stays on until it is switched off, the state leaves MANUAL, or the e-stop is pressed. Leaving MANUAL drives all relays off and blanks the NeoPixels.
 - **Relay driver** (`src/parade/relay/rpi.py`) claims GPIO18 already at its off level and drives it off again on shutdown. `systemctl stop`, a clean exit, or a crash followed by the systemd restart all leave the relay off.
 - **Index microswitch** is wired NC, so a cut wire reads as "at index" and switches the motor off.
 

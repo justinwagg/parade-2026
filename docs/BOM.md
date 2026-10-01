@@ -109,4 +109,4 @@ _Last reconciled: 2026-09-27._
 | 7.3 | Vents / 5V fan | Only if the closed-box test (Part 8) shows the temperature climbing. | 0–1 | Optional | Part 8 |
 | 7.4 | Heat-shrink | Spade connectors, splices, component legs. | 1 kit | Buy if out | Parts 6, 7 |
 | 7.5 | Cable ties + adhesive mounts | Secure every run against vibration. | — | Have (assumed) | — |
-| 7.6 | Ethernet patch cable | Pi eth0 → DMX-AN2. | 1 | Have (assumed) | — |
+| 7.6 | Ethernet patch cable | Pi USB-Ethernet adapter (eth1) → DMX-AN2. | 1 | Have (assumed) | — |

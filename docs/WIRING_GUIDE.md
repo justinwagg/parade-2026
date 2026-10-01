@@ -513,7 +513,7 @@ hardware:
 7. [ ] `sudo systemctl stop parade` with the motor running: the relay drops.
 8. [ ] Close the box, run 20+ minutes, and check the **PWR** pill and temperature (checklist §7).
 
-**Open item: what starts the motor?** The index switch stops it, but no cue turns the relay **on** yet. Once you decide the trigger (performer button? an operator button?), add this action to that cue in the dashboard's cue builder:
+**Open item: what starts the motor?** The index switch stops it, but no cue turns the relay **on** yet. For bench tests and setting the speed controller, switch it on by hand in **MANUAL** mode (Manual tab); note the index switch does not stop it there. Once you decide the trigger (performer button? an operator button?), add this action to that cue in the dashboard's cue builder:
 ```yaml
 - type: set_relay
   relay: phone_booth_rotation

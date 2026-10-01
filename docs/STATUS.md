@@ -1,8 +1,16 @@
 # Project Status
 
-_Last updated: 2026-09-27_
+_Last updated: 2026-10-01_
 
 **Next step:** finish the box layout checks (WIRING_GUIDE Part 1 "Box layout": confirm the ALITOVE's terminal order, measure the 5V fuse module and Pi breakout, cardboard mock-up of the mains column), then run `bash scripts/pi-setup.sh`, reboot, and bench-test the switches (WIRING_GUIDE Parts 1, 3, 4).
+
+## 2026-10-01
+
+- **MANUAL mode** (`src/parade/core/manual.py`, Manual tab → "Manual Mode — Hardware Test"): entered from SAFE only. Cues are ignored; the operator switches relays on/off with no time limit, sees each input's live state and a press counter, and sets the NeoPixels to a colour or a built-in animation (rainbow, chase, breathe, marquee). Leaving MANUAL drives relays off and blanks the strip. Intended for setting the motor speed controller and checking switches. The index switch does **not** stop the motor in MANUAL (docs/SAFETY.md).
+- **Relay + contactor coil verified switching ON** on the Pi (`parade-hwcheck relay`, and from MANUAL mode).
+- **Art-Net link to the DMX-AN2 working** over a USB-Ethernet adapter (`eth1`, NetworkManager profile `artnet`, static `2.0.0.2/8`). The node answers ArtPoll as `DMX-AN2`, both ports on universe 1.
+- `config/default.yaml` now uses the `rpi` drivers for GPIO, relays and pixels.
+- **E-stop monitor temporarily disabled** (`safety.estop_pin: null`) until the e-stop is wired. Re-enable (`estop_pin: estop_monitor`) before any test with people near the booth.
 
 ## Hardware design changes, 2026-09-27
 
@@ -28,8 +36,8 @@ Done:
 - Verified on the Pi 3: input pull-ups and reads on GPIO17/22/27, relay claim/release low on GPIO18, full app boot with rpi GPIO + relay drivers (trips EMERGENCY STOP with the monitor unwired, as designed).
 
 Not yet verified on hardware:
-- NeoPixel output (SPI not enabled on the Pi until `pi-setup.sh` + reboot).
-- Relay switching ON (not driven high during development; no load attached).
+- NeoPixel output (SPI is now enabled; strip not yet tested).
+- RockWedge fixtures responding to DMX (node link verified; fixture addresses/mode not yet checked).
 - Everything in [WIRING_GUIDE.md](WIRING_GUIDE.md) Parts 2–8.
 
 Open questions (block parts of Part 7):
@@ -42,4 +50,5 @@ Open questions (block parts of Part 7):
 Parts: all control-box parts are on hand or ordered except the 120V wire (16/3 extension cord cores) and, if not in stock, a 1000µF capacitor and heat-shrink. See [BOM.md](BOM.md) "Still to buy".
 
 ## Known issues
+- `safety.estop_pin` is `null` in `config/default.yaml` while the e-stop is unwired: the software does not watch the e-stop.
 - e2e tests (`tests/e2e`) need a Playwright browser, which doesn't launch on the Pi; run them on the Mac.

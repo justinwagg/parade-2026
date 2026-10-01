@@ -10,8 +10,8 @@ Background and requirements for moving the Raspberry Pi from the bench into the 
 | NeoPixel strip(s), WS2812B | ALITOVE 5V 60A supply (control box) | Pi GPIO data line | Direct |
 | Phone booth rotation motor | Generator 120V AC via the box's IEC inlet (not the ALITOVE) | Relay module on GPIO18 + e-stop in series | Relay input only |
 | Turntable index microswitch, performer button, e-stop monitor contact | Pi 3.3V / GND (internal pull-ups) | — | GPIO17, GPIO27, GPIO22 inputs |
-| Cold spark machine, fog machine | Generator (direct) | Wireless DMX via DMX-AN2 | Art-Net over eth0 only |
-| RockWedge LED fixtures | Batteries | Wireless DMX via DMX-AN2 | Art-Net over eth0 only |
+| Cold spark machine, fog machine | Generator (direct) | Wireless DMX via DMX-AN2 | Art-Net over eth1 (USB-Ethernet) only |
+| RockWedge LED fixtures | Batteries | Wireless DMX via DMX-AN2 | Art-Net over eth1 (USB-Ethernet) only |
 
 The spark and fog machines have no electrical connection to the control box, so they are out of scope here. The only hazardous load the Pi controls is the rotation motor.
 
@@ -158,7 +158,9 @@ The Pi 3 cannot measure its supply voltage, only whether it fell below ~4.63V. U
 
 - [ ] Run `bash scripts/pi-setup.sh` to install the systemd service (starts on boot). The service serves on **port 8000**; running `parade` by hand uses **8080**.
 - [ ] Run `bash scripts/pi-ap.sh` to switch wlan0 to the `parade-2026` access point. Do this from HDMI+keyboard or over Ethernet, not over WiFi SSH. See `scripts/README.md`.
-- [ ] Plug the DMX-AN2 into eth0 and give eth0 a static `2.0.0.2/8` address (not yet scripted).
+- [x] Plug the DMX-AN2 into the USB-Ethernet adapter (`eth1`) and give it a static `2.0.0.2/8` address. Done with a NetworkManager profile (no gateway, so internet stays on wlan0):
+  `sudo nmcli con add type ethernet con-name artnet ifname eth1 ipv4.method manual ipv4.addresses 2.0.0.2/8 ipv4.never-default yes ipv6.method disabled`
+  Check with `ping 2.0.0.1`. If the adapter ever enumerates under another name, re-point the profile (`nmcli con mod artnet connection.interface-name <name>`).
 - [ ] Enable the read-only overlay filesystem (`raspi-config` → Performance → Overlay File System) so sudden power cuts can't corrupt the SD card. Turn it off again to make config changes.
 - [ ] Back up the SD card image.
 

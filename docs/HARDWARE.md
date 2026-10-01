@@ -23,6 +23,10 @@ Rule of thumb for inputs: wire **NO** when a broken wire should mean "nothing ha
 
 `config/default.yaml` → `hardware`: `gpio_driver`, `relay_driver`, `pixel_driver` are each `simulated` or `rpi` and can be switched independently. `gpio_chip` selects `/dev/gpiochipN` (0 on a Pi 3).
 
+## Manual mode
+
+With the app running, go SAFE → **MANUAL** (Manual tab → "Manual Mode — Hardware Test") to switch relays on/off, watch each input's live state and press counter, and run NeoPixel colours/animations without any cue. Use it to set the speed controller with the booth turning. The index switch does not stop the motor in MANUAL; use OFF, SAFE or the e-stop. See [SAFETY.md](SAFETY.md).
+
 ## Bench tool
 
 `.venv/bin/parade-hwcheck inputs | relay [ID] [--seconds N] | pixels test | pixels color R G B`. Uses the real drivers and the config. Stop the service first. The relay check honours the e-stop monitor.

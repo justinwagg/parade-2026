@@ -87,6 +87,7 @@ body{
 .sp-BOOTING{background:rgba(59,91,219,.1);color:var(--blue);border-color:rgba(59,91,219,.3)}
 .sp-PAUSED {background:rgba(194,93,30,.1);color:var(--orange);border-color:rgba(194,93,30,.3)}
 .sp-EMERGENCY_STOP{background:rgba(207,58,58,.15);color:var(--red);border-color:rgba(207,58,58,.4);animation:blink .9s infinite}
+.sp-MANUAL {background:rgba(112,72,232,.1);color:var(--purple);border-color:rgba(112,72,232,.35)}
 .sp-FAULT  {background:rgba(207,58,58,.1);color:var(--red);border-color:rgba(207,58,58,.35)}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
 
@@ -176,6 +177,7 @@ body{
   backdrop-filter:blur(8px);
 }
 #state-info-bar.sib-estop{background:rgba(207,58,58,.06);border-bottom-color:rgba(207,58,58,.25)}
+#state-info-bar.sib-manual{background:rgba(112,72,232,.05);border-bottom-color:rgba(112,72,232,.2)}
 #state-info-bar.sib-running{background:rgba(45,158,117,.05);border-bottom-color:rgba(45,158,117,.2)}
 
 /* ── Tab bar ── */
@@ -292,6 +294,7 @@ button.btn-icon:hover:not(:disabled){background:var(--overlay);border-color:var(
 .tag-gpio    {background:rgba(59,91,219,.1);color:var(--blue)}
 .tag-cue     {background:rgba(45,158,117,.1);color:var(--green)}
 .tag-operator{background:rgba(196,125,0,.1);color:var(--yellow)}
+.tag-manual  {background:rgba(112,72,232,.1);color:var(--purple)}
 .tag-system  {background:rgba(112,72,232,.1);color:var(--purple)}
 .tag-error   {background:rgba(207,58,58,.1);color:var(--red)}
 .tag-power   {background:rgba(196,125,0,.1);color:var(--yellow)}
@@ -333,6 +336,24 @@ button.btn-icon:hover:not(:disabled){background:var(--overlay);border-color:var(
 .relay-indicator.on{background:var(--green);box-shadow:0 0 8px var(--green)}
 .relay-name{flex:1;font-family:monospace;font-size:12px}
 .relay-status{font-size:11px;font-weight:600;min-width:28px;text-align:right}
+
+/* ── Manual mode card ── */
+#card-manual-mode{border-color:rgba(112,72,232,.35)}
+.mm-banner{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
+  padding:8px 12px;border-radius:var(--radius-sm);font-size:12px;margin-bottom:12px;
+  background:rgba(196,125,0,.08);border:1px solid rgba(196,125,0,.3);color:var(--yellow)}
+.mm-banner.on{background:rgba(112,72,232,.07);border-color:rgba(112,72,232,.3);color:var(--purple)}
+.mm-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.mm-sub{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-bottom:6px;
+  display:flex;align-items:center;justify-content:space-between}
+.mm-row{display:flex;align-items:center;gap:10px;padding:8px 10px;margin-bottom:6px;
+  border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--raised);transition:border-color .2s,background .2s}
+.mm-row.hit{border-color:var(--green);background:rgba(45,158,117,.1)}
+.mm-count{font-family:monospace;font-size:12px;min-width:56px;text-align:right;color:var(--muted)}
+.mm-swatches{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
+.mm-swatch{width:26px;height:26px;padding:0;border-radius:50%;border:2px solid var(--border-hi)}
+.mm-mode{font-size:11px;color:var(--muted);margin-top:6px}
+#mm-pixel-strip .px{width:6px;height:20px;border-radius:2px}
 
 /* ── Fixture visualizer ── */
 .fviz-section{margin-bottom:10px}
@@ -903,6 +924,49 @@ hr.div{border:none;border-top:1px solid var(--border);margin:6px 0}
   <!-- ─ MANUAL ────────────────────────────────────────────────────────── -->
   <div class="panel" id="panel-manual">
 
+    <!-- MANUAL mode: relays, inputs, NeoPixels by hand -->
+    <div class="card" id="card-manual-mode">
+      <div class="card-title"><span class="ct-icon">🛠</span>Manual Mode — Hardware Test</div>
+      <div class="mm-banner" id="mm-banner">
+        <span id="mm-banner-text">System is SAFE. Enter MANUAL to switch relays and pixels by hand.</span>
+        <div id="mm-banner-btns" style="display:flex;gap:6px"></div>
+      </div>
+      <div class="mm-grid">
+        <div>
+          <div class="mm-sub">Relays</div>
+          <div id="mm-relays"></div>
+        </div>
+        <div>
+          <div class="mm-sub"><span>Inputs</span><button class="btn-sm btn-icon" onclick="mmResetCounts()" title="Reset counters">↺</button></div>
+          <div id="mm-inputs"></div>
+        </div>
+        <div>
+          <div class="mm-sub">NeoPixels</div>
+          <div class="flex">
+            <input type="color" id="mm-color" value="#ff0000" style="width:44px;height:28px;padding:0">
+            <button class="btn-sm" onclick="mmSetColor()">Set color</button>
+            <button class="btn-sm" onclick="mmPixelsOff()">Off</button>
+          </div>
+          <div class="mm-swatches" id="mm-swatches"></div>
+          <div class="flex" style="margin-top:4px">
+            <button class="btn-sm" onclick="mmEffect('rainbow')">🌈 Rainbow</button>
+            <button class="btn-sm" onclick="mmEffect('chase')">Chase</button>
+            <button class="btn-sm" onclick="mmEffect('breathe')">Breathe</button>
+            <button class="btn-sm" onclick="mmEffect('theater')">Marquee</button>
+          </div>
+          <div class="slider-row" style="margin-top:8px">
+            <span style="font-size:11px;color:var(--muted)">Speed</span>
+            <input type="range" id="mm-speed" min="0.2" max="4" step="0.1" value="1"
+              oninput="$('mm-speed-val').textContent=(+this.value).toFixed(1)+'×'" onchange="mmReapplyEffect()">
+            <span class="slider-val" id="mm-speed-val">1.0×</span>
+          </div>
+          <div class="pixel-scroll" style="margin-top:8px"><div class="pixel-strip" id="mm-pixel-strip"></div></div>
+          <div class="mm-mode" id="mm-pixel-mode"></div>
+        </div>
+      </div>
+      <div class="msg" id="mm-msg"></div>
+    </div>
+
     <!-- Fixture control -->
     <div class="card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
@@ -966,6 +1030,9 @@ const STATE_INFO = {
   PAUSED:         {desc:'Show paused. DMX outputs are frozen at their current values. No cues will fire.',
                    hint:'Resume with RUNNING, or drop to SAFE to go dark. Useful for holding a look during a show pause.',
                    cls:'sp-PAUSED'},
+  MANUAL:         {desc:'Manual mode — cues are ignored. Relays, NeoPixels and inputs are under direct control on the Manual tab.',
+                   hint:'Use this to set the motor speed controller, check switches and test pixels. Return to SAFE to switch everything off.',
+                   cls:'sp-MANUAL'},
   EMERGENCY_STOP: {desc:'EMERGENCY STOP — all show activity halted immediately.',
                    hint:'All cues have been cancelled and relays switched off. Reset to SAFE when it is safe to do so. NeoPixels and DMX hold their last look.',
                    cls:'sp-EMERGENCY_STOP'},
@@ -974,7 +1041,7 @@ const STATE_INFO = {
                    cls:'sp-FAULT'},
 };
 
-const TRANSITION_CLS = {RUNNING:'btn-primary',READY:'btn-primary',EMERGENCY_STOP:'btn-danger'};
+const TRANSITION_CLS = {RUNNING:'btn-primary',READY:'btn-primary',MANUAL:'btn-fire',EMERGENCY_STOP:'btn-danger'};
 
 const ACTION_LABEL = {
   set_dmx_scene:  p=>`DMX → <b>${p.scene}</b>`,
@@ -1274,7 +1341,7 @@ function applySnapshot(data){
   const sibDesc = $('sib-desc');
   const sibHint = $('sib-hint');
   if(sib){
-    sib.className = st==='EMERGENCY_STOP'?'sib-estop':st==='RUNNING'?'sib-running':'';
+    sib.className = st==='EMERGENCY_STOP'?'sib-estop':st==='RUNNING'?'sib-running':st==='MANUAL'?'sib-manual':'';
   }
   if(sibDesc) sibDesc.textContent = info.desc||'';
   if(sibHint) sibHint.textContent = data.estop_active
@@ -1324,6 +1391,9 @@ function applySnapshot(data){
 
   // GPIO sim buttons
   renderGPIOSim();
+
+  // Manual mode card
+  renderManualMode(data);
 
   // Float fixture visualization
   renderFixtureViz(data.universes||{});
@@ -1713,6 +1783,92 @@ async function setManualChannel(){
   try{const r=await api('POST',`/api/dmx/universes/${uid}/channels`,{channels:{[ch]:val}});flash($('manual-msg'),r.ok?`Ch ${ch} = ${val}`:r.detail,r.ok)}
   catch(e){flash($('manual-msg'),e.message,false)}
 }
+
+// ── Manual mode (relays / inputs / NeoPixels) ─────────────────────────────────
+const MM_SWATCHES=['#ff0000','#ff8000','#ffff00','#00ff00','#00ffff','#0000ff','#ff00ff','#ffffff'];
+let mmLastCounts={}, mmHitUntil={}, mmLastEffect=null;
+
+// Compare against the HTML we last wrote, not el.innerHTML: the browser
+// re-serializes attributes, so innerHTML never matches and the buttons would be
+// rebuilt on every 100 ms push, swallowing clicks.
+function mmSetHTML(el,html){ if(el._mmHTML!==html){ el.innerHTML=html; el._mmHTML=html; } }
+
+function mmHexToRgb(hex){const n=parseInt(hex.slice(1),16);return[(n>>16)&255,(n>>8)&255,n&255]}
+
+function renderManualMode(data){
+  const st=data.system_state, on=st==='MANUAL', m=data.manual||{};
+  const banner=$('mm-banner');
+  if(!banner) return;
+  banner.className='mm-banner'+(on?' on':'');
+  const valid=data.valid_transitions||[];
+  let text, btns='';
+  if(on){
+    text='MANUAL mode: cues are ignored. Leaving MANUAL switches relays and pixels off.';
+    btns=`<button class="btn-sm" onclick="setState('SAFE')">Exit to SAFE</button>`;
+  }else if(valid.includes('MANUAL')){
+    text=`System is ${st}. Enter MANUAL to switch relays and pixels by hand.`;
+    btns=`<button class="btn-sm btn-fire" onclick="setState('MANUAL')">Enter MANUAL</button>`;
+  }else{
+    text=`System is ${st.replace(/_/g,' ')}. MANUAL can only be entered from SAFE.`;
+    if(valid.includes('SAFE')) btns=`<button class="btn-sm" onclick="setState('SAFE')">Go to SAFE</button>`;
+  }
+  if(data.estop_active) text='E-stop is pressed (or its monitor wire is open). Release it, then reset to SAFE.';
+  $('mm-banner-text').textContent=text;
+  mmSetHTML($('mm-banner-btns'),btns);
+
+  // Relays
+  const relays=Object.entries(data.relays||{});
+  const rHTML=relays.map(([id,r])=>`<div class="mm-row">
+      <div class="relay-indicator ${r?'on':''}"></div>
+      <span class="relay-name">${id}</span>
+      <button class="btn-sm ${r?'':'btn-primary'}" ${on&&!r?'':'disabled'} onclick="mmRelay('${id}',true)">ON</button>
+      <button class="btn-sm btn-danger" ${r?'':'disabled'} onclick="mmRelay('${id}',false)">OFF</button>
+    </div>`).join('')||'<div class="empty">No relays configured.</div>';
+  mmSetHTML($('mm-relays'),rHTML);
+
+  // Inputs: live state + activation counter; flash the row when the count changes
+  const counts=m.input_activations||{}, now=Date.now();
+  Object.entries(counts).forEach(([id,c])=>{ if(c>(mmLastCounts[id]||0)) mmHitUntil[id]=now+600; });
+  mmLastCounts={...counts};
+  const iHTML=Object.keys(gpioLogical).map(id=>{
+    const act=gpioLogical[id], phys=gpioPhysical[id];
+    const hit=act||(mmHitUntil[id]||0)>now;
+    return `<div class="mm-row ${hit?'hit':''}">
+      <div class="relay-indicator ${act?'on':''}"></div>
+      <span class="relay-name">${id}</span>
+      <span style="font-size:10px;color:var(--muted)">${phys===undefined?'':phys?'HIGH':'LOW'}</span>
+      <span class="relay-status" style="color:${act?'var(--green)':'var(--muted)'}">${act?'ACTIVE':'idle'}</span>
+      <span class="mm-count" title="Activations since entering MANUAL">×${counts[id]||0}</span>
+    </div>`;
+  }).join('')||'<div class="empty">No inputs configured.</div>';
+  mmSetHTML($('mm-inputs'),iHTML);
+
+  // Pixels
+  const sw=$('mm-swatches');
+  if(!sw.children.length) sw.innerHTML=MM_SWATCHES.map(h=>`<button class="mm-swatch" style="background:${h}" title="${h}" onclick="$('mm-color').value='${h}';mmSetColor()"></button>`).join('');
+  const strip=$('mm-pixel-strip'), px=data.pixels||[];
+  if(strip.children.length!==px.length) strip.innerHTML=px.map(()=>'<div class="px"></div>').join('');
+  px.forEach(([r,g,b],i)=>{const bg=(r||g||b)?`rgb(${r},${g},${b})`:'#dde0ec'; const el=strip.children[i]; if(el.style.background!==bg) el.style.background=bg;});
+  $('mm-pixel-mode').textContent=on?`Pixels: ${m.pixel_mode||'off'}`:'';
+  $('card-manual-mode').querySelectorAll('#mm-swatches button, .mm-grid > div:last-child button').forEach(b=>b.disabled=!on);
+}
+
+async function mmPost(path,body){
+  try{
+    const r=await api('POST',path,body);
+    if(!r.ok) flash($('mm-msg'),r.detail||'Failed',false);
+    return r.ok;
+  }catch(e){flash($('mm-msg'),e.message,false);return false}
+}
+function mmRelay(id,state){return mmPost(`/api/manual/relay/${encodeURIComponent(id)}`,{state})}
+function mmSetColor(){mmLastEffect=null;return mmPost('/api/manual/pixels/color',{color:mmHexToRgb($('mm-color').value)})}
+function mmPixelsOff(){mmLastEffect=null;return mmPost('/api/manual/pixels/off')}
+function mmEffect(effect){
+  mmLastEffect=effect;
+  return mmPost('/api/manual/pixels/effect',{effect,color:mmHexToRgb($('mm-color').value),speed:+$('mm-speed').value});
+}
+function mmReapplyEffect(){if(mmLastEffect&&snap.manual?.pixel_mode===mmLastEffect) mmEffect(mmLastEffect)}
+async function mmResetCounts(){mmLastCounts={};mmHitUntil={};await mmPost('/api/manual/inputs/reset')}
 
 // ── Manual fixture control ────────────────────────────────────────────────
 

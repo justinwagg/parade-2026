@@ -12,7 +12,7 @@ from parade.core.state import SystemState, StateTransitionError
 logger = logging.getLogger(__name__)
 
 # States in which cues are cancelled outright (PAUSED only stops relays).
-_HALT_STATES = {SystemState.SAFE, SystemState.EMERGENCY_STOP, SystemState.FAULT}
+_HALT_STATES = {SystemState.SAFE, SystemState.MANUAL, SystemState.EMERGENCY_STOP, SystemState.FAULT}
 
 
 class SafetyMonitor:

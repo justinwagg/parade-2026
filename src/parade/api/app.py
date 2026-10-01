@@ -12,7 +12,7 @@ def create_app(ctx: AppContext) -> FastAPI:
     app = FastAPI(title="Parade Show Control", version="0.1.0")
     app.state.ctx = ctx
 
-    from parade.api.routes import dashboard, dmx, simulation, routines, setup
+    from parade.api.routes import dashboard, dmx, simulation, routines, setup, manual
     from parade.api.routes.dependencies import get_ctx  # noqa: F401
 
     app.include_router(dashboard.router)
@@ -20,6 +20,7 @@ def create_app(ctx: AppContext) -> FastAPI:
     app.include_router(simulation.router)
     app.include_router(routines.router)
     app.include_router(setup.router)
+    app.include_router(manual.router)
 
     static_dir = Path(__file__).parent / "static"
     if static_dir.exists():

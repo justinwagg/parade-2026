@@ -14,6 +14,7 @@ from parade.relay.interface import RelayInterface
 from parade.pixels.interface import PixelInterface
 from parade.health.power import PowerMonitor
 from parade.core.safety import SafetyMonitor
+from parade.core.manual import ManualController
 
 
 @dataclass
@@ -38,6 +39,8 @@ class AppContext:
     power_monitor: PowerMonitor | None = None
     # E-stop monitoring and relay safe-states; owns operator state transitions
     safety: SafetyMonitor | None = None
+    # MANUAL-mode relay/pixel/input controls
+    manual: ManualController | None = None
     # WebSocket clients for live push
     ws_clients: list = field(default_factory=list)
     # Bounded event log: each entry is a dict {ts, tag, level, msg}

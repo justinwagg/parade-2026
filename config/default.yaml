@@ -3,9 +3,9 @@ system:
   environment: development
 hardware:
   dmx_driver: artnet
-  gpio_driver: simulated
-  pixel_driver: simulated
-  relay_driver: simulated
+  gpio_driver: rpi
+  pixel_driver: rpi
+  relay_driver: rpi
   gpio_chip: 0
 network:
   artnet_nodes:
@@ -122,7 +122,8 @@ pixel_strips:
   brightness: 1.0
   description: Main NeoPixel strip on phone booth
 safety:
-  estop_pin: estop_monitor
+  # estop_pin: estop_monitor
+  estop_pin: null
   armed_requires_operator: true
 web:
   host: 0.0.0.0

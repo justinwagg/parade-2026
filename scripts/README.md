@@ -73,6 +73,6 @@ journalctl -u parade -f          # live logs
 | Interface | Purpose | Address |
 |-----------|---------|---------|
 | `wlan0`   | WiFi AP (show mode) or client (internet) | `10.0.0.1` in AP mode |
-| `eth0`    | DMX-AN2 controller | static `2.0.0.x` (set in parade config) |
+| `eth1`    | DMX-AN2 controller (USB-Ethernet adapter) | static `2.0.0.2/8`, NetworkManager profile `artnet` (node is `2.0.0.1`) |
 
-`eth0` is unaffected by WiFi switching.
+`eth1` is unaffected by WiFi switching.

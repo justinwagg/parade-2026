@@ -96,8 +96,10 @@ async def push_ws_updates(ctx):
                     dead.append(ws)
             for ws in dead:
                 ctx.ws_clients.remove(ws)
-        # Push faster when a cue is running so flash animations are visible in the dashboard
-        await asyncio.sleep(0.1 if ctx.show_engine.active_cue else 0.5)
+        # Push faster when a cue is running or in MANUAL so animations and
+        # switch presses show up promptly in the dashboard
+        fast = ctx.show_engine.active_cue or (ctx.manual and ctx.manual.active)
+        await asyncio.sleep(0.1 if fast else 0.5)
 
 
 async def async_main(
@@ -114,6 +116,7 @@ async def async_main(
     from parade.api.app import create_app
     from parade.health.power import PowerMonitor
     from parade.core.safety import SafetyMonitor
+    from parade.core.manual import ManualController
 
     logger = logging.getLogger(__name__)
 
@@ -227,6 +230,9 @@ async def async_main(
         ),
     )
 
+    ctx.manual = ManualController(event_bus, state_machine, relay_manager, pixel_manager, ctx.safety)
+    await ctx.manual.start()
+
     # Wire event bus → log queue
     LOG_EVENT_TYPES = [
         "gpio_changed", "operator_trigger", "cue_started",
@@ -282,6 +288,7 @@ async def async_main(
         power_task.cancel()
         # Stop cues before hardware so nothing writes to a closed driver.
         await show_engine.stop()
+        await ctx.manual.stop()
         await relay_manager.stop()
         await gpio.stop()
         await pixel_manager.stop()

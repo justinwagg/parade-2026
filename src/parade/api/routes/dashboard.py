@@ -30,6 +30,7 @@ def state_snapshot(ctx: AppContext) -> dict:
         "relays": ctx.relay_manager.get_all_states(),
         "pixels": [list(p) for p in ctx.pixel_manager.get_all_pixels()],
         "power": ctx.power_monitor.snapshot() if ctx.power_monitor else None,
+        "manual": ctx.manual.snapshot() if ctx.manual else None,
         "engine": {
             "active_cue": ctx.show_engine.active_cue,
             "active_step": ctx.show_engine.active_step,

@@ -41,6 +41,7 @@ Open **http://localhost:8080** in a browser.
 The web UI at http://localhost:8080 provides:
 
 - **State control** — transition the system through SAFE → READY → RUNNING using the buttons
+- **MANUAL mode** — from SAFE, switch to MANUAL to drive relays and NeoPixels by hand and watch inputs register (Manual tab). Cues are ignored; returning to SAFE switches everything off
 - **DMX channel table** — live view of all 512 channels for each universe
 - **Scene buttons** — apply or fade to any defined scene
 - **Manual channel control** — enter a channel number and value (0–255) to set it directly

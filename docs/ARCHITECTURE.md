@@ -242,6 +242,7 @@ System state is centralized in `SafetyManager` and `SystemState`. No scattered b
 ```
 BOOTING
   └─► SAFE           (hardware init complete, outputs in safe state)
+        ├─► MANUAL   (bench testing: relays/pixels by hand, cues ignored; back to SAFE only)
         └─► READY    (operator has cleared the system for operation)
               └─► RUNNING    (show active)
               │     └─► PAUSED

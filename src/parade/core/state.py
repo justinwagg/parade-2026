@@ -7,6 +7,7 @@ class SystemState(str, Enum):
     READY = "READY"
     RUNNING = "RUNNING"
     PAUSED = "PAUSED"
+    MANUAL = "MANUAL"  # bench testing: operator drives relays/pixels by hand, cues ignored
     EMERGENCY_STOP = "EMERGENCY_STOP"
     FAULT = "FAULT"
 
@@ -16,6 +17,7 @@ ALLOWED_TRANSITIONS: dict[SystemState, set[SystemState]] = {
     SystemState.BOOTING: {SystemState.SAFE, SystemState.FAULT},
     SystemState.SAFE: {
         SystemState.READY,
+        SystemState.MANUAL,
         SystemState.FAULT,
         SystemState.EMERGENCY_STOP,
     },
@@ -33,6 +35,13 @@ ALLOWED_TRANSITIONS: dict[SystemState, set[SystemState]] = {
     },
     SystemState.PAUSED: {
         SystemState.RUNNING,
+        SystemState.SAFE,
+        SystemState.FAULT,
+        SystemState.EMERGENCY_STOP,
+    },
+    # MANUAL is entered and left only through SAFE, so a show never starts
+    # with a relay or pixel effect still set by hand.
+    SystemState.MANUAL: {
         SystemState.SAFE,
         SystemState.FAULT,
         SystemState.EMERGENCY_STOP,
