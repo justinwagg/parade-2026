@@ -454,8 +454,8 @@ Then run the powered tests, steps 11–23.
 ### Tests
 
 **Unplugged (continuity, multimeter):**
-9. [ ] Inlet ⏚ ↔ outlet ⏚: **beep**. Inlet N ↔ outlet N: **beep**.
-10. [ ] Inlet L ↔ outlet L: **no beep** (relay off). No beep between any two of L, N, ⏚ at the outlet.
+9. [ ] Inlet ⏚ ↔ outlet ⏚: **beep**. (Earth runs straight through, never switched.)
+10. [ ] Inlet L ↔ outlet L: **no beep**. Inlet N ↔ outlet N: **no beep**. No beep between any two of L, N, ⏚ at the outlet. (Both L and N run through the contactor's normally-open poles — no continuity until the coil is energised.)
 
 **Powered, nothing plugged into the motor outlet:**
 11. [ ] Plug the box into a **GFCI-protected** generator outlet (many portable generators have them; otherwise use an inline GFCI cord). Mains, a float, weather and people are exactly what GFCIs are for.
