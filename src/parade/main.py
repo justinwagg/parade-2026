@@ -283,6 +283,21 @@ async def async_main(
     await status_lights.start()
     lights_task = asyncio.create_task(status_lights.run())
 
+    # OLED status display (joining info, state, network, diagnostics). Indicator only.
+    from parade.display.controller import StatusDisplay
+    if config.hardware.display_driver == "ssd1306":
+        from parade.display.ssd1306 import SSD1306Display
+        display_driver = SSD1306Display(config.display)
+    else:
+        from parade.display.simulated import SimulatedDisplay
+        display_driver = SimulatedDisplay()
+    status_display = StatusDisplay(
+        config.display, display_driver, state_machine, show_engine, ctx.power_monitor,
+        [n.ip for n in config.network.artnet_nodes],
+        port_override if port_override is not None else config.web.port,
+    )
+    await status_display.start()
+    display_task = asyncio.create_task(status_display.run())
 
     # Run uvicorn
     server_config = uvicorn.Config(
@@ -301,6 +316,7 @@ async def async_main(
         ws_task.cancel()
         power_task.cancel()
         lights_task.cancel()
+        display_task.cancel()
         # Stop cues before hardware so nothing writes to a closed driver.
         await show_engine.stop()
         await ctx.manual.stop()
@@ -309,6 +325,7 @@ async def async_main(
         await pixel_manager.stop()
         await dmx_driver.stop()
         await status_lights.stop()
+        await status_display.stop()
 
 
 def main() -> None:

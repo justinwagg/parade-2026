@@ -480,6 +480,34 @@ With the lid on, there's no way to see the system state or whether the Pi is hea
 
 ---
 
+## ADR-018 — OLED Status Display: SSD1306 via luma.oled, WiFi Password Shown
+
+**Status:** Accepted
+**Date:** 2026-10-02
+
+### Context
+
+People joining the float's WiFi need the SSID, password and controller URL, and a phone isn't always at hand to diagnose the network. A 128×32 SSD1306 OLED is wired to the Pi's I2C1 pins.
+
+### Decision
+
+- Drive it with **luma.oled** (apt `python3-luma.oled`, imported lazily), using Pillow's 6×11 bitmap font: 3 lines of 21 characters.
+- Rotate four pages (join, show, network, diagnostics). Hold the show page in EMERGENCY STOP or FAULT.
+- **Show the WiFi password on the display.** `scripts/pi-ap.sh` writes `/etc/parade/ap-display.env` (SSID, password, address; chmod 640, group of the app's user). The root-only `/etc/parade/ap.env` stays the source.
+- Read network facts without root: `/sys/class/net/*/carrier`, `ip -j`, `iw station dump`. The Art-Net node counts as answering from its ARP entry state; the DMX loop's constant traffic keeps the kernel re-checking it.
+
+### Rationale
+
+- The password protects the float's network from passers-by, and anyone close enough to read the display is part of the crew. Showing it saves reading it out.
+- luma.oled handles SSD1306 initialisation and rotation; a frame is only sent when it changes.
+
+### Consequences
+
+- The WiFi password is readable by the app's user and visible on the box.
+- GPIO2/3 are taken by I2C1.
+
+---
+
 ## Pending Decisions
 
 The following decisions cannot be made until more hardware information is available.

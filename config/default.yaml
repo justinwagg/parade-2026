@@ -7,6 +7,7 @@ hardware:
   pixel_driver: rpi
   relay_driver: rpi
   status_light_driver: blinkstick
+  display_driver: ssd1306
   gpio_chip: 0
 network:
   artnet_nodes:
@@ -133,6 +134,22 @@ status_lights:
     serial: BS025473
     led_index: 1
     description: Right BlinkStick Nano, LED facing up through the lid
+display:
+  i2c_bus: 1
+  address: 0x3C
+  width: 128
+  height: 32
+  rotate: 2  # mounted upside down in the box
+  page_seconds: 4.0
+  ap_info_path: /etc/parade/ap-display.env
+  wifi_interface: wlan0
+  interfaces:
+  - label: Mac
+    interface: eth0
+  - label: WiFi
+    interface: wlan0
+  - label: ArtNet
+    interface: eth1
 safety:
   estop_pin: estop_monitor
   # estop_pin: null

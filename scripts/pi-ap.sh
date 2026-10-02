@@ -24,6 +24,8 @@
 #   Read from /etc/parade/ap.env (root-only, chmod 600, never in git):
 #       AP_PASSWORD=yourpassword
 #   If that file is missing, the script asks for a password and creates it.
+#   A copy with the SSID goes to /etc/parade/ap-display.env (chmod 640, group of
+#   the user running this script) for the OLED status display.
 #
 # WARNING: this takes wlan0 off your home WiFi. If you are connected over home
 # WiFi (SSH / VS Code), that session will drop. Connect over the Ethernet
@@ -46,6 +48,7 @@ AP_INTERFACE="wlan0"
 AP_CHANNEL=6                    # 1, 6 or 11; the Pi 3 Model B is 2.4 GHz only
 AP_COUNTRY="US"
 ENV_FILE="/etc/parade/ap.env"
+DISPLAY_ENV_FILE="/etc/parade/ap-display.env"   # SSID + password for the status display
 
 HOSTAPD_CONF="/etc/hostapd/hostapd.conf"
 NM_UNMANAGED_CONF="/etc/NetworkManager/conf.d/90-parade-ap.conf"
@@ -168,6 +171,14 @@ else
     printf 'AP_PASSWORD=%s\n' "$AP_PASSWORD" | write_root_file "$ENV_FILE" 600
     echo "==> Saved to $ENV_FILE (root-only)"
 fi
+
+# The parade app (running as this user) shows the SSID and password on the
+# OLED status display so people can join. Same secret, readable by this user's
+# group only.
+printf 'AP_SSID=%s\nAP_PASSWORD=%s\nAP_ADDRESS=%s\n' "$AP_SSID" "$AP_PASSWORD" "$AP_ADDRESS" \
+    | write_root_file "$DISPLAY_ENV_FILE" 640
+run sudo chgrp "$(id -gn)" "$DISPLAY_ENV_FILE"
+echo "==> Wrote $DISPLAY_ENV_FILE (readable by group $(id -gn), for the status display)"
 echo ""
 
 warn_if_ssh_on_wlan
