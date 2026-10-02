@@ -8,7 +8,7 @@
 | Parade WiFi | `very-good-float-2026` |
 | WiFi password (write by hand) | ______________________ |
 | Pi on the parade WiFi | `10.0.0.1`. Dashboard: `http://10.0.0.1:8080` |
-| Pi on the Mac cable | usually `192.168.2.2` (Mac is `192.168.2.1`) |
+| Pi on the Mac cable | usually `192.168.2.2` (Mac is `192.168.2.1`). Dashboard: `http://192.168.2.2:8080` |
 | DMX-AN2 (Art-Net) | `2.0.0.1`, Pi side `2.0.0.2`, on the USB-Ethernet adapter |
 
 ## 1. Over the Mac cable
