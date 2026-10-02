@@ -422,6 +422,36 @@ Milestone 2 needs real drivers for GPIO inputs, relay outputs and WS2812B NeoPix
 
 ---
 
+## ADR-016 — WiFi Access Point: hostapd, not NetworkManager's Hotspot
+
+**Status:** Accepted
+**Date:** 2026-10-02
+
+### Context
+
+The iPad controls the float over the Pi's own WiFi network on `wlan0`. NetworkManager (which manages the Pi's other ports) has a built-in hotspot mode. On this Pi 3 Model B (BCM43430 WiFi, Debian 13, NetworkManager 1.52, wpa_supplicant 2.10) it failed: phones reported "incorrect password" with the correct password. Debug logs showed the phone's password proof (4-way handshake message 2) verified, then the phone left right after message 3. NetworkManager always configures `key_mgmt=WPA-PSK WPA-PSK-SHA256` (also with `pmf disable`), the chip has no AES-CMAC/MFP support, and the security description in message 3 then disagrees with what the chip broadcasts.
+
+### Decision
+
+- **hostapd** runs `wlan0` as the access point with plain WPA2-PSK / CCMP only, channel 6, country US.
+- `parade-ap-network.service` sets `10.0.0.1/24` on `wlan0` and runs dnsmasq for DHCP only (no DNS, no NAT).
+- NetworkManager ignores `wlan0` (`unmanaged-devices`) and keeps managing `eth0` (Mac cable, DHCP) and `eth1` (Art-Net).
+- `scripts/pi-ap.sh` sets all of this up; the password lives in root-only `/etc/parade/ap.env`, never in git.
+
+### Rationale
+
+- hostapd is the standard, long-proven access point for Raspberry Pis and lets us choose the exact security settings.
+- NetworkManager has no setting that removes WPA-PSK-SHA256.
+- The Pi gets internet over the Mac cable, so `wlan0` doesn't need to switch to home WiFi for updates.
+
+### Consequences
+
+- `wlan0` no longer falls back to home WiFi. `bash scripts/pi-ap.sh --undo` hands it back to NetworkManager if needed.
+- The iPad gets no internet through the Pi (not needed for the show).
+- Recovery uses `sudo systemctl restart hostapd parade-ap-network`, not `nmcli con up parade-ap` (docs/NETWORK_RECOVERY.md).
+
+---
+
 ## Pending Decisions
 
 The following decisions cannot be made until more hardware information is available.

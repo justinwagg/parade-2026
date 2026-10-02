@@ -1,8 +1,15 @@
 # Project Status
 
-_Last updated: 2026-10-01_
+_Last updated: 2026-10-02_
 
 **Next step:** finish the box layout checks (WIRING_GUIDE Part 1 "Box layout": confirm the ALITOVE's terminal order, measure the 5V fuse module and Pi breakout, cardboard mock-up of the mains column), then run `bash scripts/pi-setup.sh`, reboot, and bench-test the switches (WIRING_GUIDE Parts 1, 3, 4).
+
+## 2026-10-02
+
+- **Pi networking set up** ([NETWORK.md](NETWORK.md)): `wlan0` is the WiFi access point `very-good-float-2026` at `10.0.0.1` (iPhone joined and got `10.0.0.187`); `eth0` (built-in Ethernet) gets internet and SSH from the Mac via Internet Sharing (`192.168.2.2`); `eth1` Art-Net unchanged.
+- The access point runs on **hostapd**, not NetworkManager's hotspot, which phones rejected with "incorrect password" on the Pi 3's WiFi chip (ADR-016). `scripts/pi-ap.sh` reads the password from root-only `/etc/parade/ap.env` and supports `--dry-run` / `--undo`.
+- New read-only `scripts/pi-network-status.sh`; printable [NETWORK_RECOVERY.md](NETWORK_RECOVERY.md).
+- Still to do: NETWORK.md test checklist items 7–8 (reboot test, parade-day test without the Mac cable) and an SD-card backup.
 
 ## 2026-10-01
 

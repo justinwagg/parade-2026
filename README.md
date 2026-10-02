@@ -85,6 +85,14 @@ The node IP defaults to `2.0.0.1` (Chauvet DMX-AN2 factory default). If you've c
 
 Restart `parade` — it begins sending Art-Net at 40 Hz immediately.
 
+### Pi networking
+
+The Pi runs its own WiFi network (`very-good-float-2026`) for the iPad at `http://10.0.0.1:8080`, gets internet over an Ethernet cable from the Mac, and talks Art-Net to the DMX-AN2 on a USB-Ethernet adapter. Setup, tests and troubleshooting: [docs/NETWORK.md](docs/NETWORK.md). Printable recovery card: [docs/NETWORK_RECOVERY.md](docs/NETWORK_RECOVERY.md).
+
+```bash
+bash scripts/pi-network-status.sh   # plain-English status of every port
+```
+
 ### GPIO, relay and NeoPixels (on the Pi)
 
 1. `bash scripts/pi-setup.sh`, then `sudo reboot` (installs `lgpio`/`spidev`, enables SPI).
@@ -115,6 +123,8 @@ docs/
   HARDWARE.md         # pin map, drivers, bench tool
   SAFETY.md           # e-stop and relay safety layers
   HARDWARE_SETUP_CHECKLIST.md  # power, relay & NeoPixel background checklist
+  NETWORK.md          # Pi networking: WiFi access point, Mac cable, Art-Net
+  NETWORK_RECOVERY.md # printable one-page network recovery card
   BOM.md              # parts to buy for the control box
   PROJECT_SPEC.md     # requirements and milestone plan
 fixture_profiles/
