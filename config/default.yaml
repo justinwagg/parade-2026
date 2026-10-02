@@ -92,7 +92,7 @@ fixtures:
   address: 212
 gpio_inputs:
 - id: rotation_index
-  pin: 17
+  pin: 26
   pull: up
   active_low: false
   debounce_ms: 20
@@ -123,8 +123,8 @@ pixel_strips:
   brightness: 1.0
   description: Main NeoPixel chain on phone booth (Adafruit 5163 4W RGBW warm white)
 safety:
-  # estop_pin: estop_monitor
-  estop_pin: null
+  estop_pin: estop_monitor
+  # estop_pin: null
   armed_requires_operator: true
 web:
   host: 0.0.0.0
