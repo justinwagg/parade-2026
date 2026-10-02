@@ -7,7 +7,7 @@
 # What it does:
 #   Creates (or replaces) a NetworkManager WiFi AP connection named "parade-ap".
 #   The Pi will broadcast the SSID below and assign IPs via built-in DHCP.
-#   Connect your iPad to this network, then browse to http://10.0.0.1:8000
+#   Connect your iPad to this network, then browse to http://10.0.0.1:8080
 #
 # Requirements:
 #   - Pi OS Bookworm (NetworkManager installed and running)
@@ -75,7 +75,7 @@ sudo nmcli con up "$AP_CON_NAME"
 echo ""
 echo "==> AP is live."
 echo "    Connect your iPad to WiFi: $AP_SSID  (password: $AP_PASSWORD)"
-echo "    Then open:  http://10.0.0.1:8000"
+echo "    Then open:  http://10.0.0.1:8080"
 echo ""
 echo "    The AP will start automatically on every boot."
 echo "    To stop:    sudo nmcli con down $AP_CON_NAME"

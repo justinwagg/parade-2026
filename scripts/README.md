@@ -10,7 +10,7 @@ bash scripts/pi-ap.sh      # creates WiFi AP: SSID "parade-2026", IP 10.0.0.1
 sudo systemctl start parade
 ```
 
-Connect iPad to WiFi `parade-2026` (password: `parade2026`), then open `http://10.0.0.1:8000`.
+Connect iPad to WiFi `parade-2026` (password: `parade2026`), then open `http://10.0.0.1:8080`.
 
 ---
 

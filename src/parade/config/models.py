@@ -67,6 +67,9 @@ class PixelStripConfig(BaseModel):
     pin: int = 0  # 0 = unassigned (simulation only); rpi driver requires 10 (SPI0 MOSI)
     count: int = Field(ge=1, le=1024)
     strip_type: str = "WS2812B"
+    # Byte order on the wire, e.g. "GRB" or "GRBW"; empty = the strip_type's default.
+    # W is the white channel (RGBW pixels), sent as 0 for now.
+    color_order: str = ""
     brightness: float = Field(default=1.0, ge=0.0, le=1.0)  # hardware output scale; caps current draw
     description: str = ""
 
