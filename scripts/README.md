@@ -6,11 +6,11 @@ Run these once after cloning the repo on a fresh Pi OS Bookworm install.
 
 ```bash
 bash scripts/pi-setup.sh   # installs deps, systemd service, renames hostname to "parade"
-bash scripts/pi-ap.sh      # creates WiFi AP: SSID "parade-2026", IP 10.0.0.1
+bash scripts/pi-ap.sh      # creates WiFi AP: SSID "very-good-float-2026", IP 10.0.0.1
 sudo systemctl start parade
 ```
 
-Connect iPad to WiFi `parade-2026` (password: `parade2026`), then open `http://10.0.0.1:8080`.
+Connect iPad to WiFi `very-good-float-2026` (password: `sudo cat /etc/parade/ap.env` on the Pi), then open `http://10.0.0.1:8080`.
 
 ---
 

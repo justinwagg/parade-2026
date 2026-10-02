@@ -157,7 +157,7 @@ The Pi 3 cannot measure its supply voltage, only whether it fell below ~4.63V. U
 ## 8. Before show day
 
 - [ ] Run `bash scripts/pi-setup.sh` to install the systemd service (starts on boot). The web UI is on **port 8080** (`web.port` in `config/default.yaml`).
-- [ ] Run `bash scripts/pi-ap.sh` to switch wlan0 to the `parade-2026` access point. Do this from HDMI+keyboard or over Ethernet, not over WiFi SSH. See `scripts/README.md`.
+- [ ] Run `bash scripts/pi-ap.sh` to switch wlan0 to the `very-good-float-2026` access point. Do this from HDMI+keyboard or over Ethernet, not over WiFi SSH. See `scripts/README.md`.
 - [x] Plug the DMX-AN2 into the USB-Ethernet adapter (`eth1`) and give it a static `2.0.0.2/8` address. Done with a NetworkManager profile (no gateway, so internet stays on wlan0):
   `sudo nmcli con add type ethernet con-name artnet ifname eth1 ipv4.method manual ipv4.addresses 2.0.0.2/8 ipv4.never-default yes ipv6.method disabled`
   Check with `ping 2.0.0.1`. If the adapter ever enumerates under another name, re-point the profile (`nmcli con mod artnet connection.interface-name <name>`).
