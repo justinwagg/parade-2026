@@ -1,8 +1,15 @@
 # Project Status
 
-_Last updated: 2026-10-01_
+_Last updated: 2026-10-02_
 
 **Next step:** finish the box layout checks (WIRING_GUIDE Part 1 "Box layout": confirm the ALITOVE's terminal order, measure the 5V fuse module and Pi breakout, cardboard mock-up of the mains column), then run `bash scripts/pi-setup.sh`, reboot, and bench-test the switches (WIRING_GUIDE Parts 1, 3, 4).
+
+## 2026-10-02
+
+- **Pi networking set up** ([NETWORK.md](NETWORK.md)): `wlan0` is the WiFi access point `very-good-float-2026` at `10.0.0.1` (iPhone joined and got `10.0.0.187`); `eth0` (built-in Ethernet) gets internet and SSH from the Mac via Internet Sharing (`192.168.2.2`); `eth1` Art-Net unchanged.
+- The access point runs on **hostapd**, not NetworkManager's hotspot, which phones rejected with "incorrect password" on the Pi 3's WiFi chip (ADR-016). `scripts/pi-ap.sh` reads the password from root-only `/etc/parade/ap.env` and supports `--dry-run` / `--undo`.
+- New read-only `scripts/pi-network-status.sh`; printable [NETWORK_RECOVERY.md](NETWORK_RECOVERY.md).
+- Still to do: NETWORK.md test checklist items 7–8 (reboot test, parade-day test without the Mac cable) and an SD-card backup.
 
 ## 2026-10-01
 
@@ -32,6 +39,8 @@ Done:
 - `SafetyMonitor` (`src/parade/core/safety.py`): e-stop monitor input on GPIO22, relays off whenever the state leaves RUNNING, reset blocked while the e-stop is pressed. State changes are now published as `system_state_changed` events.
 - The cue engine refuses relay-ON outside RUNNING, and cancels running cues on SAFE, FAULT or EMERGENCY_STOP.
 - `stop_rotation_at_index` cue: the index switch cuts the motor relay.
+- Status lights: two BlinkStick Nanos show system state and Pi health/heartbeat (`src/parade/status_lights/`, colour key in [HARDWARE.md](HARDWARE.md#status-lights)).
+- OLED status display: 128×32 SSD1306 on I2C rotates WiFi join info, show state, network and diagnostics (`src/parade/display/`, see [HARDWARE.md](HARDWARE.md#status-display)).
 - `parade-hwcheck` bench tool; `scripts/pi-setup.sh` installs lgpio/spidev and enables SPI.
 - Verified on the Pi 3: input pull-ups and reads on GPIO17/22/27, relay claim/release low on GPIO18, full app boot with rpi GPIO + relay drivers (trips EMERGENCY STOP with the monitor unwired, as designed).
 

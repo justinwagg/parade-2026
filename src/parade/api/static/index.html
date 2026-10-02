@@ -343,7 +343,7 @@ button.btn-icon:hover:not(:disabled){background:var(--overlay);border-color:var(
   padding:8px 12px;border-radius:var(--radius-sm);font-size:12px;margin-bottom:12px;
   background:rgba(196,125,0,.08);border:1px solid rgba(196,125,0,.3);color:var(--yellow)}
 .mm-banner.on{background:rgba(112,72,232,.07);border-color:rgba(112,72,232,.3);color:var(--purple)}
-.mm-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.mm-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));gap:14px}
 .mm-sub{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-bottom:6px;
   display:flex;align-items:center;justify-content:space-between}
 .mm-row{display:flex;align-items:center;gap:10px;padding:8px 10px;margin-bottom:6px;
@@ -397,7 +397,7 @@ button.btn-icon:hover:not(:disabled){background:var(--overlay);border-color:var(
 }
 
 /* ── Cue cards ── */
-.cue-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px}
+.cue-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(290px,100%),1fr));gap:12px}
 .cue-card{background:var(--raised);border:1px solid var(--border);border-radius:var(--radius);padding:12px}
 .cue-id{font-family:monospace;font-size:13px;font-weight:600;color:var(--blue)}
 .cue-desc{font-size:11px;color:var(--muted);margin-top:2px}
@@ -563,6 +563,52 @@ hr.div{border:none;border-top:1px solid var(--border);margin:6px 0}
   cursor:pointer;transition:background .15s,color .15s;font-weight:500;
 }
 .toggle-pill button.active{background:var(--blue);color:#fff;font-weight:700}
+/* ══ Responsive: tablet & phone ════════════════════════════════════════════ */
+@media(max-width:900px){
+  /* Live and Builder stack into one column; the page scrolls as a whole */
+  #panel-live,#panel-routines{grid-template-columns:minmax(0,1fr)!important}
+  #panel-live{overflow:visible}
+  #live-output-col{overflow:visible}
+  #card-log #log-entries{max-height:320px}
+  #card-sim-controls{overflow:visible!important}
+  #setup-fixtures-list,#dmx-universes{overflow-x:auto}
+}
+@media(max-width:760px){
+  #header{flex-wrap:wrap;height:auto;padding:8px 12px;gap:8px 10px}
+  #header h1{font-size:13px}
+  #header .power-ind{margin-left:auto}
+  #header .power-ind + .conn-indicator{margin-left:4px}
+  #conn-label{display:none}
+  #state-transitions{order:10;flex-basis:100%;margin-left:0!important}
+  #state-transitions:empty{display:none}
+  #state-msg{order:11;min-width:0!important}
+  #state-msg:empty{display:none}
+  #state-info-bar{padding:5px 12px;flex-wrap:wrap;gap:2px 10px}
+  #tabs{padding:0 4px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  #tabs::-webkit-scrollbar{display:none}
+  .tab{padding:12px 14px}
+  .panel{padding:10px;gap:10px}
+  #panel-manual.active{gap:10px}
+  .card{padding:12px}
+  .setup-pair{grid-template-columns:minmax(0,1fr)!important;gap:10px!important}
+  .setup-hint{margin-left:0!important}
+  .bldr-meta{flex-wrap:wrap}
+  .bldr-meta input[type=text]{flex:1 1 100%!important}
+  .bldr-step-form,.bldr-trigger-fields{grid-template-columns:minmax(0,1fr)}
+  .fviz-bar-name{min-width:0;flex:0 0 40%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .pin-cell{width:auto;flex:1 1 0;min-width:0}
+  .pw-tiles{grid-template-columns:repeat(auto-fit,minmax(110px,1fr))}
+  .pw-banner .pw-label{font-size:15px}
+}
+/* Touch screens: bigger tap targets, no hover-only controls, no iOS focus zoom */
+@media(pointer:coarse){
+  button{min-height:36px}
+  button.btn-sm,button.btn-icon{min-height:32px}
+  .toggle-pill button{min-height:32px}
+  .bldr-lib-del{opacity:1}
+  input[type=number],input[type=text],select,textarea{font-size:16px}
+  .bldr-field input,.bldr-field select,.bldr-trigger-fields select,.bldr-trigger-fields input{font-size:16px}
+}
 </style>
 </head>
 <body>
@@ -760,7 +806,7 @@ hr.div{border:none;border-top:1px solid var(--border);margin:6px 0}
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
       <button class="btn-primary" onclick="setupSave()">Save &amp; Apply Configuration</button>
       <span class="msg" id="setup-msg" style="margin:0"></span>
-      <span style="font-size:11px;color:var(--muted);margin-left:auto">
+      <span class="setup-hint" style="font-size:11px;color:var(--muted);margin-left:auto">
         Changes apply immediately in simulation. Real GPIO pin changes need a restart.
       </span>
     </div>
@@ -818,7 +864,7 @@ hr.div{border:none;border-top:1px solid var(--border);margin:6px 0}
     </div>
 
     <!-- GPIO Inputs + Relay Outputs -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+    <div class="setup-pair" style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
 
       <!-- GPIO Inputs -->
       <div class="card">

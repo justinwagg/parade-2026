@@ -13,6 +13,8 @@ class HardwareConfig(BaseModel):
     gpio_driver: Literal["rpi", "simulated"] = "simulated"
     pixel_driver: Literal["rpi", "mcu", "simulated"] = "simulated"
     relay_driver: Literal["rpi", "mcu", "simulated"] = "simulated"
+    status_light_driver: Literal["blinkstick", "simulated"] = "simulated"
+    display_driver: Literal["ssd1306", "simulated"] = "simulated"
     gpio_chip: int = 0  # /dev/gpiochipN for the rpi GPIO and relay drivers
 
 
@@ -81,6 +83,39 @@ class FixtureGroupConfig(BaseModel):
     description: str = ""
 
 
+class StatusLightConfig(BaseModel):
+    serial: str  # BlinkStick serial without the firmware suffix, e.g. "BS025458"
+    led_index: int = Field(default=0, ge=0, le=1)  # which of the Nano's two LEDs faces out of the enclosure
+    description: str = ""
+
+
+class StatusLightsConfig(BaseModel):
+    brightness: float = Field(default=0.2, ge=0.0, le=1.0)
+    state_led: StatusLightConfig | None = None  # system state (SAFE, RUNNING, E-STOP...)
+    health_led: StatusLightConfig | None = None  # Pi power/thermal health and app heartbeat
+
+
+class DisplayInterfaceConfig(BaseModel):
+    label: str  # shown on the display, e.g. "Mac"
+    interface: str  # e.g. "eth0"
+
+
+class DisplayConfig(BaseModel):
+    i2c_bus: int = 1
+    address: int = 0x3C
+    width: int = 128
+    height: int = 32
+    rotate: int = Field(default=0, ge=0, le=3)  # quarter turns; 2 = upside down
+    page_seconds: float = Field(default=4.0, gt=0)
+    ap_info_path: str = "/etc/parade/ap-display.env"  # written by scripts/pi-ap.sh
+    wifi_interface: str = "wlan0"
+    interfaces: list[DisplayInterfaceConfig] = [
+        DisplayInterfaceConfig(label="Mac", interface="eth0"),
+        DisplayInterfaceConfig(label="WiFi", interface="wlan0"),
+        DisplayInterfaceConfig(label="ArtNet", interface="eth1"),
+    ]
+
+
 class SafetyConfig(BaseModel):
     estop_pin: str | None = None  # id of the gpio_inputs entry wired to the e-stop monitor contact
     armed_requires_operator: bool = True
@@ -102,6 +137,8 @@ class Config(BaseModel):
     gpio_inputs: list[GPIOInputConfig] = []
     relay_outputs: list[RelayOutputConfig] = []
     pixel_strips: list[PixelStripConfig] = []
+    status_lights: StatusLightsConfig = StatusLightsConfig()
+    display: DisplayConfig = DisplayConfig()
     safety: SafetyConfig = SafetyConfig()
     web: WebConfig = WebConfig()
 

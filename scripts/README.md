@@ -2,58 +2,31 @@
 
 ## First-time setup
 
-Run these once after cloning the repo on a fresh Pi OS Bookworm install.
+Run these once after cloning the repo on a fresh Raspberry Pi OS (Debian 13) install. Run `pi-ap.sh` over the Ethernet cable from the Mac, not over WiFi.
 
 ```bash
 bash scripts/pi-setup.sh   # installs deps, systemd service, renames hostname to "parade"
-bash scripts/pi-ap.sh      # creates WiFi AP: SSID "parade-2026", IP 10.0.0.1
+bash scripts/pi-ap.sh      # creates WiFi AP: SSID "very-good-float-2026", IP 10.0.0.1
 sudo systemctl start parade
 ```
 
-Connect iPad to WiFi `parade-2026` (password: `parade2026`), then open `http://10.0.0.1:8080`.
+Connect iPad to WiFi `very-good-float-2026` (password: `sudo cat /etc/parade/ap.env` on the Pi), then open `http://10.0.0.1:8080`.
 
 ---
 
-## Switching between AP mode and regular WiFi
+## WiFi access point vs. home WiFi
 
-`wlan0` can only do one thing at a time — AP mode or client mode. Switching requires taking one connection down before bringing the other up.
-
-**⚠️ Do not do this over SSH on the parade AP** — you'll cut your own connection. Use HDMI+keyboard on the Pi directly, or SSH over ethernet.
-
-### Go to regular WiFi (e.g. to pull updates)
+`wlan0` is the parade access point (run by hostapd, not NetworkManager). The Pi gets internet over the Ethernet cable from the Mac (Mac Internet Sharing), so it doesn't need home WiFi for updates. Full guide: [docs/NETWORK.md](../docs/NETWORK.md).
 
 ```bash
-sudo nmcli con down parade-ap
-sudo nmcli con up home-wifi        # replace "home-wifi" with your saved connection name
+bash scripts/pi-network-status.sh   # read-only summary of every port, plus addresses to use
+bash scripts/pi-ap.sh --dry-run     # show what pi-ap.sh would change
+bash scripts/pi-ap.sh --undo        # hand wlan0 back to NetworkManager (rejoins saved home WiFi)
+bash scripts/pi-ap.sh               # back to the parade access point
+sudo systemctl restart hostapd parade-ap-network   # restart the access point
 ```
 
-Or connect to a new network on the fly:
-```bash
-sudo nmcli con down parade-ap
-sudo nmcli device wifi connect "SSID" password "password"
-```
-
-### Go back to show mode
-
-```bash
-sudo nmcli con down home-wifi
-sudo nmcli con up parade-ap
-```
-
-### Save your home WiFi as a named profile (do this once)
-
-```bash
-sudo nmcli con add type wifi ifname wlan0 con-name "home-wifi" \
-    ssid "YourSSID" \
-    wifi-sec.key-mgmt wpa-psk \
-    wifi-sec.psk "YourPassword"
-```
-
-### List all saved connections
-
-```bash
-nmcli con show
-```
+**⚠️ Don't run `pi-ap.sh` (or `--undo`) over SSH on WiFi**: it changes `wlan0` and cuts that session. Use the Ethernet cable from the Mac or HDMI+keyboard.
 
 ---
 
@@ -72,7 +45,8 @@ journalctl -u parade -f          # live logs
 
 | Interface | Purpose | Address |
 |-----------|---------|---------|
-| `wlan0`   | WiFi AP (show mode) or client (internet) | `10.0.0.1` in AP mode |
+| `wlan0`   | WiFi access point `very-good-float-2026` for the iPad (hostapd) | `10.0.0.1/24` |
+| `eth0`    | Built-in Ethernet: cable to the Mac (internet + SSH via Mac Internet Sharing) | `192.168.2.x` by DHCP |
 | `eth1`    | DMX-AN2 controller (USB-Ethernet adapter) | static `2.0.0.2/8`, NetworkManager profile `artnet` (node is `2.0.0.1`) |
 
-`eth1` is unaffected by WiFi switching.
+See [docs/NETWORK.md](../docs/NETWORK.md) for the diagram, tests and troubleshooting.

@@ -6,9 +6,11 @@
 #   bash scripts/pi-setup.sh
 #
 # What it does:
-#   1. Installs system packages (python3-venv, git, lgpio, spidev)
-#   2. Enables SPI (NeoPixels on GPIO10) and pins the core clock for it
-#   3. Creates a Python venv at .venv/ (sees the apt lgpio/spidev) and installs the project
+#   1. Installs system packages (python3-venv, git, lgpio, spidev, pyusb, luma.oled)
+#   2. Enables SPI (NeoPixels on GPIO10) and pins the core clock for it, and I2C
+#      (OLED status display on GPIO2/3);
+#      lets the plugdev group use BlinkStick status lights
+#   3. Creates a Python venv at .venv/ (sees the apt lgpio/spidev/pyusb/luma) and installs the project
 #   4. Writes a systemd service that auto-starts parade on boot
 #   5. Optionally renames the Pi hostname to "parade"
 #
@@ -29,7 +31,7 @@ echo "==> parade setup — repo: $REPO_DIR"
 echo "==> Installing system packages..."
 sudo apt-get update -qq
 sudo apt-get install -y --no-install-recommends python3-venv python3-pip git \
-    python3-lgpio python3-spidev
+    python3-lgpio python3-spidev python3-usb python3-luma.oled i2c-tools
 
 # 2. SPI for NeoPixels (GPIO10 / SPI0 MOSI). core_freq=250 keeps the Pi 3's
 #    SPI clock (and so the WS2812 bit timing) from changing with CPU load.
@@ -45,10 +47,25 @@ if ! grep -q '^core_freq=250' "$BOOT_CONFIG"; then
     echo 'core_freq=250' | sudo tee -a "$BOOT_CONFIG" > /dev/null
     NEEDS_REBOOT=1
 fi
-sudo usermod -aG gpio,spi "$PARADE_USER"
+# I2C for the OLED status display (GPIO2 SDA / GPIO3 SCL).
+if [ ! -e /dev/i2c-1 ]; then
+    echo "==> Enabling I2C..."
+    sudo raspi-config nonint do_i2c 0
+fi
+sudo usermod -aG gpio,spi,i2c,plugdev "$PARADE_USER"
+
+# BlinkStick status lights (USB): let plugdev drive them without root.
+BLINKSTICK_RULE=/etc/udev/rules.d/85-blinkstick.rules
+if [ ! -e "$BLINKSTICK_RULE" ]; then
+    echo "==> Adding BlinkStick udev rule..."
+    echo 'SUBSYSTEM=="usb", ATTR{idVendor}=="20a0", ATTR{idProduct}=="41e5", GROUP="plugdev", MODE="0664"' \
+        | sudo tee "$BLINKSTICK_RULE" > /dev/null
+    sudo udevadm control --reload-rules
+    sudo udevadm trigger
+fi
 
 # 3. Python venv. --system-site-packages lets it import the apt-installed
-#    lgpio and spidev; re-running it on an existing venv just updates that flag.
+#    lgpio, spidev, pyusb and luma.oled; re-running it on an existing venv just updates that flag.
 VENV="$REPO_DIR/.venv"
 echo "==> Creating/updating venv at $VENV..."
 python3 -m venv --system-site-packages "$VENV"

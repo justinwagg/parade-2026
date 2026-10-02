@@ -422,6 +422,92 @@ Milestone 2 needs real drivers for GPIO inputs, relay outputs and WS2812B NeoPix
 
 ---
 
+## ADR-016 — WiFi Access Point: hostapd, not NetworkManager's Hotspot
+
+**Status:** Accepted
+**Date:** 2026-10-02
+
+### Context
+
+The iPad controls the float over the Pi's own WiFi network on `wlan0`. NetworkManager (which manages the Pi's other ports) has a built-in hotspot mode. On this Pi 3 Model B (BCM43430 WiFi, Debian 13, NetworkManager 1.52, wpa_supplicant 2.10) it failed: phones reported "incorrect password" with the correct password. Debug logs showed the phone's password proof (4-way handshake message 2) verified, then the phone left right after message 3. NetworkManager always configures `key_mgmt=WPA-PSK WPA-PSK-SHA256` (also with `pmf disable`), the chip has no AES-CMAC/MFP support, and the security description in message 3 then disagrees with what the chip broadcasts.
+
+### Decision
+
+- **hostapd** runs `wlan0` as the access point with plain WPA2-PSK / CCMP only, channel 6, country US.
+- `parade-ap-network.service` sets `10.0.0.1/24` on `wlan0` and runs dnsmasq for DHCP only (no DNS, no NAT).
+- NetworkManager ignores `wlan0` (`unmanaged-devices`) and keeps managing `eth0` (Mac cable, DHCP) and `eth1` (Art-Net).
+- `scripts/pi-ap.sh` sets all of this up; the password lives in root-only `/etc/parade/ap.env`, never in git.
+
+### Rationale
+
+- hostapd is the standard, long-proven access point for Raspberry Pis and lets us choose the exact security settings.
+- NetworkManager has no setting that removes WPA-PSK-SHA256.
+- The Pi gets internet over the Mac cable, so `wlan0` doesn't need to switch to home WiFi for updates.
+
+### Consequences
+
+- `wlan0` no longer falls back to home WiFi. `bash scripts/pi-ap.sh --undo` hands it back to NetworkManager if needed.
+- The iPad gets no internet through the Pi (not needed for the show).
+- Recovery uses `sudo systemctl restart hostapd parade-ap-network`, not `nmcli con up parade-ap` (docs/NETWORK_RECOVERY.md).
+
+---
+
+## ADR-017 — Status Lights: BlinkStick Nano via pyusb
+
+**Status:** Accepted
+**Date:** 2026-10-02
+
+### Context
+
+With the lid on, there's no way to see the system state or whether the Pi is healthy without a phone on the dashboard. Two BlinkStick Nanos (USB, two RGB LEDs each) are plugged into the Pi; only one LED per stick faces up through the lid.
+
+### Decision
+
+- One stick shows the system state, the other Pi power/thermal health with a slow heartbeat pulse. Colours follow the dashboard's state pill.
+- The driver talks to the sticks directly with **pyusb** (apt `python3-usb`, imported lazily), one USB control transfer per LED. It doesn't use the `blinkstick` PyPI package.
+- Sticks are matched by serial number. A missing or unplugged stick is retried every 5 s, and unchanged LEDs are rewritten every second so a re-plugged stick catches up.
+- Indicator only: the lights read state, nothing reads the lights, and any USB error is logged and ignored.
+
+### Rationale
+
+- The `blinkstick` package (1.2.0) declares only a Windows dependency, so it doesn't install `pyusb` on Linux, and it pulls in more than the one report we need.
+- The heartbeat makes a hung or crashed app visible. Without it, a BlinkStick keeps showing its last colour.
+
+### Consequences
+
+- Non-root access needs a udev rule for USB ID `20a0:41e5` (group `plugdev`), installed by `scripts/pi-setup.sh`.
+- On a clean shutdown the LEDs go dark. After a crash the state LED keeps its last colour, but the health LED stops pulsing.
+
+---
+
+## ADR-018 — OLED Status Display: SSD1306 via luma.oled, WiFi Password Shown
+
+**Status:** Accepted
+**Date:** 2026-10-02
+
+### Context
+
+People joining the float's WiFi need the SSID, password and controller URL, and a phone isn't always at hand to diagnose the network. A 128×32 SSD1306 OLED is wired to the Pi's I2C1 pins.
+
+### Decision
+
+- Drive it with **luma.oled** (apt `python3-luma.oled`, imported lazily), using Pillow's 6×11 bitmap font: 3 lines of 21 characters.
+- Rotate four pages (join, show, network, diagnostics). Hold the show page in EMERGENCY STOP or FAULT.
+- **Show the WiFi password on the display.** `scripts/pi-ap.sh` writes `/etc/parade/ap-display.env` (SSID, password, address; chmod 640, group of the app's user). The root-only `/etc/parade/ap.env` stays the source.
+- Read network facts without root: `/sys/class/net/*/carrier`, `ip -j`, `iw station dump`. The Art-Net node counts as answering from its ARP entry state; the DMX loop's constant traffic keeps the kernel re-checking it.
+
+### Rationale
+
+- The password protects the float's network from passers-by, and anyone close enough to read the display is part of the crew. Showing it saves reading it out.
+- luma.oled handles SSD1306 initialisation and rotation; a frame is only sent when it changes.
+
+### Consequences
+
+- The WiFi password is readable by the app's user and visible on the box.
+- GPIO2/3 are taken by I2C1.
+
+---
+
 ## Pending Decisions
 
 The following decisions cannot be made until more hardware information is available.

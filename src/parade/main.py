@@ -270,6 +270,35 @@ async def async_main(
 
     power_task = asyncio.create_task(ctx.power_monitor.run(_log_power_change))
 
+    # Status lights (BlinkStick LEDs showing state + health). Indicator only.
+    from parade.status_lights.controller import StatusLights
+    sl_cfg = config.status_lights
+    if config.hardware.status_light_driver == "blinkstick":
+        from parade.status_lights.blinkstick import BlinkStickLights
+        sl_driver = BlinkStickLights([l.serial for l in (sl_cfg.state_led, sl_cfg.health_led) if l])
+    else:
+        from parade.status_lights.simulated import SimulatedStatusLights
+        sl_driver = SimulatedStatusLights()
+    status_lights = StatusLights(sl_cfg, sl_driver, state_machine, ctx.power_monitor, event_bus)
+    await status_lights.start()
+    lights_task = asyncio.create_task(status_lights.run())
+
+    # OLED status display (joining info, state, network, diagnostics). Indicator only.
+    from parade.display.controller import StatusDisplay
+    if config.hardware.display_driver == "ssd1306":
+        from parade.display.ssd1306 import SSD1306Display
+        display_driver = SSD1306Display(config.display)
+    else:
+        from parade.display.simulated import SimulatedDisplay
+        display_driver = SimulatedDisplay()
+    status_display = StatusDisplay(
+        config.display, display_driver, state_machine, show_engine, ctx.power_monitor,
+        [n.ip for n in config.network.artnet_nodes],
+        port_override if port_override is not None else config.web.port,
+    )
+    await status_display.start()
+    display_task = asyncio.create_task(status_display.run())
+
     # Run uvicorn
     server_config = uvicorn.Config(
         app,
@@ -286,6 +315,8 @@ async def async_main(
         output_task.cancel()
         ws_task.cancel()
         power_task.cancel()
+        lights_task.cancel()
+        display_task.cancel()
         # Stop cues before hardware so nothing writes to a closed driver.
         await show_engine.stop()
         await ctx.manual.stop()
@@ -293,6 +324,8 @@ async def async_main(
         await gpio.stop()
         await pixel_manager.stop()
         await dmx_driver.stop()
+        await status_lights.stop()
+        await status_display.stop()
 
 
 def main() -> None:
