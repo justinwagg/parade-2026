@@ -21,7 +21,35 @@ Rule of thumb for inputs: wire **NO** when a broken wire should mean "nothing ha
 
 ## Drivers
 
-`config/default.yaml` → `hardware`: `gpio_driver`, `relay_driver`, `pixel_driver` are each `simulated` or `rpi` and can be switched independently. `gpio_chip` selects `/dev/gpiochipN` (0 on a Pi 3).
+`config/default.yaml` → `hardware`: `gpio_driver`, `relay_driver`, `pixel_driver` are each `simulated` or `rpi` and can be switched independently. `status_light_driver` is `simulated` or `blinkstick`. `gpio_chip` selects `/dev/gpiochipN` (0 on a Pi 3).
+
+## Status lights
+
+Two BlinkStick Nanos in the Pi's USB ports. Each Nano has two LEDs; only LED 1 (`led_index: 1`) faces up through the enclosure lid. Sticks are matched by serial, so either can go in any port. Config: `status_lights` in `config/default.yaml`. Needs `python3-usb` and the udev rule `/etc/udev/rules.d/85-blinkstick.rules` (both from `scripts/pi-setup.sh`).
+
+**Left (`BS025458`): system state**, same colours as the dashboard.
+
+| Light | State |
+|---|---|
+| blue | BOOTING |
+| dim white | SAFE |
+| yellow | READY |
+| green | RUNNING |
+| orange | PAUSED |
+| purple | MANUAL |
+| red, fast blink | EMERGENCY STOP |
+| red, solid | FAULT |
+| brief white flash | a cue just started |
+
+**Right (`BS025473`): Pi health + heartbeat.** A slow pulse means the app is running. If it stops pulsing (frozen or off), the app has hung or exited.
+
+| Light | Meaning |
+|---|---|
+| green pulse | power and temperature OK |
+| yellow pulse | under-voltage or throttling happened since boot (clears on reboot), or CPU ≥ 70 °C |
+| red, fast blink | under-voltage now: check the 5 V supply and wiring |
+| orange, fast blink | CPU throttled or ≥ 80 °C now |
+| dim white pulse | no health data |
 
 ## Manual mode
 

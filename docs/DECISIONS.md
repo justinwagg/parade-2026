@@ -452,6 +452,34 @@ The iPad controls the float over the Pi's own WiFi network on `wlan0`. NetworkMa
 
 ---
 
+## ADR-017 — Status Lights: BlinkStick Nano via pyusb
+
+**Status:** Accepted
+**Date:** 2026-10-02
+
+### Context
+
+With the lid on, there's no way to see the system state or whether the Pi is healthy without a phone on the dashboard. Two BlinkStick Nanos (USB, two RGB LEDs each) are plugged into the Pi; only one LED per stick faces up through the lid.
+
+### Decision
+
+- One stick shows the system state, the other Pi power/thermal health with a slow heartbeat pulse. Colours follow the dashboard's state pill.
+- The driver talks to the sticks directly with **pyusb** (apt `python3-usb`, imported lazily), one USB control transfer per LED. It doesn't use the `blinkstick` PyPI package.
+- Sticks are matched by serial number. A missing or unplugged stick is retried every 5 s, and unchanged LEDs are rewritten every second so a re-plugged stick catches up.
+- Indicator only: the lights read state, nothing reads the lights, and any USB error is logged and ignored.
+
+### Rationale
+
+- The `blinkstick` package (1.2.0) declares only a Windows dependency, so it doesn't install `pyusb` on Linux, and it pulls in more than the one report we need.
+- The heartbeat makes a hung or crashed app visible. Without it, a BlinkStick keeps showing its last colour.
+
+### Consequences
+
+- Non-root access needs a udev rule for USB ID `20a0:41e5` (group `plugdev`), installed by `scripts/pi-setup.sh`.
+- On a clean shutdown the LEDs go dark. After a crash the state LED keeps its last colour, but the health LED stops pulsing.
+
+---
+
 ## Pending Decisions
 
 The following decisions cannot be made until more hardware information is available.

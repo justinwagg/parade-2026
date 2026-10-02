@@ -13,6 +13,7 @@ class HardwareConfig(BaseModel):
     gpio_driver: Literal["rpi", "simulated"] = "simulated"
     pixel_driver: Literal["rpi", "mcu", "simulated"] = "simulated"
     relay_driver: Literal["rpi", "mcu", "simulated"] = "simulated"
+    status_light_driver: Literal["blinkstick", "simulated"] = "simulated"
     gpio_chip: int = 0  # /dev/gpiochipN for the rpi GPIO and relay drivers
 
 
@@ -81,6 +82,18 @@ class FixtureGroupConfig(BaseModel):
     description: str = ""
 
 
+class StatusLightConfig(BaseModel):
+    serial: str  # BlinkStick serial without the firmware suffix, e.g. "BS025458"
+    led_index: int = Field(default=0, ge=0, le=1)  # which of the Nano's two LEDs faces out of the enclosure
+    description: str = ""
+
+
+class StatusLightsConfig(BaseModel):
+    brightness: float = Field(default=0.2, ge=0.0, le=1.0)
+    state_led: StatusLightConfig | None = None  # system state (SAFE, RUNNING, E-STOP...)
+    health_led: StatusLightConfig | None = None  # Pi power/thermal health and app heartbeat
+
+
 class SafetyConfig(BaseModel):
     estop_pin: str | None = None  # id of the gpio_inputs entry wired to the e-stop monitor contact
     armed_requires_operator: bool = True
@@ -102,6 +115,7 @@ class Config(BaseModel):
     gpio_inputs: list[GPIOInputConfig] = []
     relay_outputs: list[RelayOutputConfig] = []
     pixel_strips: list[PixelStripConfig] = []
+    status_lights: StatusLightsConfig = StatusLightsConfig()
     safety: SafetyConfig = SafetyConfig()
     web: WebConfig = WebConfig()
 

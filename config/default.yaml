@@ -6,6 +6,7 @@ hardware:
   gpio_driver: rpi
   pixel_driver: rpi
   relay_driver: rpi
+  status_light_driver: blinkstick
   gpio_chip: 0
 network:
   artnet_nodes:
@@ -122,6 +123,16 @@ pixel_strips:
   color_order: RGBW
   brightness: 1.0
   description: Main NeoPixel chain on phone booth (Adafruit 5163 4W RGBW warm white)
+status_lights:
+  brightness: 0.2
+  state_led:
+    serial: BS025458
+    led_index: 1
+    description: Left BlinkStick Nano, LED facing up through the lid
+  health_led:
+    serial: BS025473
+    led_index: 1
+    description: Right BlinkStick Nano, LED facing up through the lid
 safety:
   estop_pin: estop_monitor
   # estop_pin: null

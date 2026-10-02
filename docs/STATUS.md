@@ -39,6 +39,7 @@ Done:
 - `SafetyMonitor` (`src/parade/core/safety.py`): e-stop monitor input on GPIO22, relays off whenever the state leaves RUNNING, reset blocked while the e-stop is pressed. State changes are now published as `system_state_changed` events.
 - The cue engine refuses relay-ON outside RUNNING, and cancels running cues on SAFE, FAULT or EMERGENCY_STOP.
 - `stop_rotation_at_index` cue: the index switch cuts the motor relay.
+- Status lights: two BlinkStick Nanos show system state and Pi health/heartbeat (`src/parade/status_lights/`, colour key in [HARDWARE.md](HARDWARE.md#status-lights)).
 - `parade-hwcheck` bench tool; `scripts/pi-setup.sh` installs lgpio/spidev and enables SPI.
 - Verified on the Pi 3: input pull-ups and reads on GPIO17/22/27, relay claim/release low on GPIO18, full app boot with rpi GPIO + relay drivers (trips EMERGENCY STOP with the monitor unwired, as designed).
 
