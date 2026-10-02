@@ -21,7 +21,6 @@ REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SERVICE_NAME="parade"
 HOSTNAME_NEW="parade"
 PARADE_USER="${USER:-pi}"
-BIND_PORT="8000"
 # ─────────────────────────────────────────────────────────────────────────────
 
 echo "==> parade setup — repo: $REPO_DIR"
@@ -69,7 +68,7 @@ After=network.target
 Type=simple
 User=$PARADE_USER
 WorkingDirectory=$REPO_DIR
-ExecStart=$VENV/bin/parade --port $BIND_PORT
+ExecStart=$VENV/bin/parade
 Restart=on-failure
 RestartSec=5
 StandardOutput=journal
@@ -97,7 +96,7 @@ echo ""
 echo "==> Setup complete."
 echo "    Start the service:   sudo systemctl start parade"
 echo "    View logs:           journalctl -u parade -f"
-echo "    Web UI (from iPad):  http://${HOSTNAME_NEW}.local:${BIND_PORT}"
+echo "    Web UI (from iPad):  http://${HOSTNAME_NEW}.local:8080"
 echo ""
 echo "    If you haven't set up the WiFi access point yet, run:"
 echo "    bash scripts/pi-ap.sh"
