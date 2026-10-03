@@ -205,7 +205,10 @@ async def async_main(
         state_machine=state_machine,
         groups=config.fixture_groups,
     )
-    await show_engine.start()
+    if config.show.enabled:
+        logger.info("Show sequencer enabled: cues are loaded but not run")
+    else:
+        await show_engine.start()
 
     # Assemble context (set ref so log handler can append)
     ctx = AppContext(
@@ -291,8 +294,29 @@ async def async_main(
     else:
         from parade.display.simulated import SimulatedDisplay
         display_driver = SimulatedDisplay()
+    # Phone booth show (sequencer + live looks), when enabled
+    show_task = None
+    if config.show.enabled:
+        from parade.show.controller import ShowController, SparkUsage
+        from parade.show.params import ShowParamStore
+        ctx.show_params = ShowParamStore(config_path.parent / config.show.params_file)
+        ctx.show = ShowController(
+            config.show, ctx.show_params, event_bus, state_machine, ctx.safety,
+            relay_manager, scene_manager, pixel_manager,
+            {g.id: list(g.fixture_ids) for g in config.fixture_groups},
+            SparkUsage(config_path.parent / config.show.usage_file),
+            log=lambda msg: ctx.event_log.append(
+                {"ts": round(time.time() * 1000), "tag": "cue", "msg": msg}
+            ),
+        )
+        await ctx.show.start()
+        show_task = asyncio.create_task(ctx.show.run())
+
+    def _activity() -> str | None:
+        return ctx.show.describe() if ctx.show else show_engine.active_cue
+
     status_display = StatusDisplay(
-        config.display, display_driver, state_machine, show_engine, ctx.power_monitor,
+        config.display, display_driver, state_machine, _activity, ctx.power_monitor,
         [n.ip for n in config.network.artnet_nodes],
         port_override if port_override is not None else config.web.port,
     )
@@ -317,6 +341,9 @@ async def async_main(
         power_task.cancel()
         lights_task.cancel()
         display_task.cancel()
+        if show_task:
+            show_task.cancel()
+            await ctx.show.stop()
         # Stop cues before hardware so nothing writes to a closed driver.
         await show_engine.stop()
         await ctx.manual.stop()

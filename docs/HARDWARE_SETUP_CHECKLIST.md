@@ -168,6 +168,5 @@ The Pi 3 cannot measure its supply voltage, only whether it fell below ~4.63V. U
 
 - Relay module: relay is a **Helishun HLS8L-DC5V-S-C** (datasheet gives no motor rating, so it switches the contactor coil, Design B). Still to confirm: the board's trigger type (high/low jumper) and the 3.3V bench test.
 - Rotation motor: **Bemonoc 300 W 110V AC gear motor, 45 RPM, with speed controller** ([B0GSYZCTPM](https://www.amazon.com/dp/B0GSYZCTPM)), switched via a Schneider LC1D09G7 contactor (WIRING_GUIDE Part 7, Design B). Still needed: rated current from the labels or a measured running current (→ motor fuse, expected T5A/T6.3A), plug type (expected NEMA 5-15P), whether the controller auto-starts when power is applied (WIRING_GUIDE step 19), and coast-down time.
-- Which event turns the motor **on** (performer button? operator trigger?). The index switch already turns it off (`stop_rotation_at_index` cue).
 - Final NeoPixel count and layout (affects power injection and fusing).
 - E-stop placement: on the control box (simplest; 120V stays inside) or remote (needs its own enclosure and mains-rated cable, BOM 5.8).

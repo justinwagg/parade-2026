@@ -1,0 +1,120 @@
+cycle: {stop_duration_s: 30.0, extra_rev_window_s: 4.0}
+watchdog: {enabled: true, factor: 2.5, first_revolution_s: 60.0}
+spark: {enabled: true, on_ms: 1000.0, interval_s: 20.0, jitter_pct: 30.0, level_pct: 80.0}
+fog: {enabled: true, on_s: 3.0, interval_s: 20.0, haze_pct: 60.0, fan_pct: 60.0, during_stop: true}
+fog_boost: {haze_pct: 100.0, fan_pct: 100.0, after_stop_s: 10.0}
+interior:
+  min_gap_ms: 200.0
+  max_gap_ms: 710.0
+  flash_ms: 80.0
+  burst_chance_pct: 35.0
+  brightness_pct: 100.0
+  palette:
+  - [255, 255, 255]
+  - [170, 200, 255]
+  - [140, 90, 255]
+exterior:
+  enabled: true
+  effect: pulse
+  color: [255, 255, 255]
+  pulse_period_s: 1.5
+  lightning:
+    min_gap_ms: 150.0
+    max_gap_ms: 900.0
+    flash_ms: 80.0
+    burst_chance_pct: 35.0
+    brightness_pct: 100.0
+    palette:
+    - [255, 255, 255]
+    - [170, 200, 255]
+    - [140, 90, 255]
+  stop_coverage: whole_stop
+  turning:
+    effect: lightning
+    color: [255, 255, 255]
+    pulse_period_s: 3.1
+    brightness_pct: 100.0
+    lightning:
+      min_gap_ms: 160.0
+      max_gap_ms: 570.0
+      flash_ms: 80.0
+      burst_chance_pct: 35.0
+      brightness_pct: 100.0
+      palette:
+      - [255, 255, 255]
+      - [170, 200, 255]
+      - [140, 90, 255]
+sides:
+- effect: chase
+  color: [0, 60, 255]
+  background: [0, 0, 0]
+  period_s: 1.5
+  length: 4
+  brightness_pct: 100.0
+  lightning:
+    min_gap_ms: 300.0
+    max_gap_ms: 2500.0
+    flash_ms: 80.0
+    burst_chance_pct: 35.0
+    brightness_pct: 100.0
+    palette:
+    - [255, 255, 255]
+    - [170, 200, 255]
+    - [140, 90, 255]
+- effect: chase
+  color: [0, 60, 255]
+  background: [0, 0, 0]
+  period_s: 1.5
+  length: 4
+  brightness_pct: 100.0
+  lightning:
+    min_gap_ms: 300.0
+    max_gap_ms: 2500.0
+    flash_ms: 80.0
+    burst_chance_pct: 35.0
+    brightness_pct: 100.0
+    palette:
+    - [255, 255, 255]
+    - [170, 200, 255]
+    - [140, 90, 255]
+- effect: chase
+  color: [0, 60, 255]
+  background: [0, 0, 0]
+  period_s: 1.5
+  length: 4
+  brightness_pct: 100.0
+  lightning:
+    min_gap_ms: 300.0
+    max_gap_ms: 2500.0
+    flash_ms: 80.0
+    burst_chance_pct: 35.0
+    brightness_pct: 100.0
+    palette:
+    - [255, 255, 255]
+    - [170, 200, 255]
+    - [140, 90, 255]
+- effect: chase
+  color: [0, 60, 255]
+  background: [0, 0, 0]
+  period_s: 1.5
+  length: 4
+  brightness_pct: 100.0
+  lightning:
+    min_gap_ms: 300.0
+    max_gap_ms: 2500.0
+    flash_ms: 80.0
+    burst_chance_pct: 35.0
+    brightness_pct: 100.0
+    palette:
+    - [255, 255, 255]
+    - [170, 200, 255]
+    - [140, 90, 255]
+stop:
+  pulse_color: [4, 51, 255]
+  pulse_period_s: 2.0
+  pulse_depth_pct: 70.0
+  dark_level_pct: 35.0
+  fade_delay_s: 3.0
+  fade_duration_s: 4.0
+  fade_color: [255, 180, 120]
+calibration: {grams_per_spark_s: null, hopper_grams: 0.0, parade_minutes: 90.0}

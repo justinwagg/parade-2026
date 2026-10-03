@@ -14,7 +14,8 @@ The rule (ADR-012): **the hardware e-stop is authoritative.** The Pi is the show
 | 3 | **Motor branch fuse** (T5A/T6.3A) and coil fuse (T1A) | motor or wiring fault | No |
 | 4 | **GFCI** at the generator outlet | current leaking to earth (shock) | No |
 | 5 | Software `SafetyMonitor` (`src/parade/core/safety.py`) | e-stop monitor active, or state leaves RUNNING or MANUAL | Yes |
-| 6 | `stop_rotation_at_index` cue | tabletop reaches the index microswitch (RUNNING only) | Yes |
+| 6 | Show sequencer (`src/parade/show/`) | performer armed it and the tabletop reaches the index microswitch (RUNNING only) | Yes |
+| 7 | Show **index watchdog** | no index pass within 2.5× the measured revolution (60 s before one is measured): motor off, state → FAULT | Yes |
 
 Wiring for layers 1–4 is in [WIRING_GUIDE.md](WIRING_GUIDE.md) Part 7.
 
@@ -30,7 +31,8 @@ Wiring for layers 1–4 is in [WIRING_GUIDE.md](WIRING_GUIDE.md) Part 7.
 - **Leaving RUNNING** (PAUSED, SAFE, FAULT, EMERGENCY_STOP) drives all relays off. SAFE, FAULT and EMERGENCY_STOP also cancel running cues.
 - **MANUAL** (bench testing) is entered and left only through SAFE. Cues are ignored, so **the index microswitch does not stop the motor**: a relay switched on by hand stays on until it is switched off, the state leaves MANUAL, or the e-stop is pressed. Leaving MANUAL drives all relays off and blanks the NeoPixels.
 - **Relay driver** (`src/parade/relay/rpi.py`) claims GPIO18 already at its off level and drives it off again on shutdown. `systemctl stop`, a clean exit, or a crash followed by the systemd restart all leave the relay off.
-- **Index microswitch** is wired NC, so a cut wire reads as "at index" and switches the motor off.
+- **Index microswitch** is wired NC, so a cut wire reads as "at index". With the show sequencer (docs/SHOW.md) the booth turns continuously in RUNNING and stops at the index only after the performer button, so a cut wire alone doesn't stop it. The **index watchdog** covers that: no index pass in time (cut wire, stuck switch, jammed booth) cuts the motor and goes to FAULT.
+- **Sparks and fog** are set to zero whenever the state leaves RUNNING, and sparks never fire while the booth is stopped.
 
 ## What the software cannot do
 

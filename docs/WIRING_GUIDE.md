@@ -180,7 +180,7 @@ This powers the Pi, NeoPixels and relay board. The motor branch is added in Part
 
 ## Part 4 — Tabletop index microswitch (your #2)
 
-**How it works:** the microswitch is wired through its **NC (normally-closed)** contact between **GPIO17** and **GND**. At rest the contact is closed and the pin reads LOW (idle). When the tabletop's cam presses the lever, the contact opens and the pull-up takes the pin HIGH (ACTIVE). The `stop_rotation_at_index` cue then switches the motor relay off. It runs on every index hit in RUNNING, regardless of the performer flag.
+**How it works:** the microswitch is wired through its **NC (normally-closed)** contact between **GPIO17** and **GND**. At rest the contact is closed and the pin reads LOW (idle). When the tabletop's cam presses the lever, the contact opens and the pull-up takes the pin HIGH (ACTIVE). The show sequencer (docs/SHOW.md) uses it to stop the booth after the performer button, and its index watchdog uses it to confirm the booth is still turning.
 
 **Why NC here and NO on the performer button:** this switch is what stops the motor. With NC wiring, a cut or unplugged wire reads as "at index", so the motor gets switched off. With NO wiring, the same fault would leave the motor spinning with no automatic stop.
 

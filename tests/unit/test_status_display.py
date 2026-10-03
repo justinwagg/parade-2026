@@ -1,4 +1,3 @@
-from types import SimpleNamespace
 
 from parade.config.models import DisplayConfig
 from parade.core.state import SystemState, SystemStateMachine
@@ -78,10 +77,10 @@ def test_join_page_without_ap_file():
 
 def test_show_page():
     assert show_page(SystemState.RUNNING, True, "spin", NET.nodes, COLS) == [
-        "RUNNING         ARMED", "cue: spin", "DMX 2.0.0.1 OK",
+        "RUNNING         ARMED", "spin", "DMX 2.0.0.1 OK",
     ]
     lines = show_page(SystemState.EMERGENCY_STOP, False, None, {"2.0.0.1": False}, COLS)
-    assert lines == ["E-STOP!", "cue: idle", "DMX 2.0.0.1 NO REPLY"]
+    assert lines == ["E-STOP!", "idle", "DMX 2.0.0.1 NO REPLY"]
 
 
 def test_network_page():
@@ -120,7 +119,7 @@ def make_display():
     pm = PowerMonitor()
     driver = SimulatedDisplay()
     display = StatusDisplay(
-        DisplayConfig(page_seconds=4.0), driver, sm, SimpleNamespace(active_cue=None), pm, ["2.0.0.1"], 8080,
+        DisplayConfig(page_seconds=4.0), driver, sm, lambda: None, pm, ["2.0.0.1"], 8080,
     )
     display.network = NET
     return display, sm, driver

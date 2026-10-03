@@ -38,7 +38,7 @@ Done:
   - NeoPixels: `src/parade/pixels/rpi.py` (WS2812B over SPI on GPIO10, `brightness` cap)
 - `SafetyMonitor` (`src/parade/core/safety.py`): e-stop monitor input on GPIO22, relays off whenever the state leaves RUNNING, reset blocked while the e-stop is pressed. State changes are now published as `system_state_changed` events.
 - The cue engine refuses relay-ON outside RUNNING, and cancels running cues on SAFE, FAULT or EMERGENCY_STOP.
-- `stop_rotation_at_index` cue: the index switch cuts the motor relay.
+- Phone booth show sequencer (`src/parade/show/`, docs/SHOW.md): a fixed rotate → arm → (extra revolution) → stop cycle with live settings on the dashboard's Show tab. Lightning interior, exterior on during the fog boost, NeoPixel sides, intermittent sparks and fog, spark-powder counter and calibration, index watchdog. Replaces the cue/Builder approach (`show.enabled`). **NeoPixel side ranges are placeholders.**
 - Status lights: two BlinkStick Nanos show system state and Pi health/heartbeat (`src/parade/status_lights/`, colour key in [HARDWARE.md](HARDWARE.md#status-lights)).
 - OLED status display: 128×32 SSD1306 on I2C rotates WiFi join info, show state, network and diagnostics (`src/parade/display/`, see [HARDWARE.md](HARDWARE.md#status-display)).
 - `parade-hwcheck` bench tool; `scripts/pi-setup.sh` installs lgpio/spidev and enables SPI.

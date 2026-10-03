@@ -508,6 +508,36 @@ People joining the float's WiFi need the SSID, password and controller URL, and 
 
 ---
 
+## ADR-019 — Phone Booth Show: Fixed Sequencer with Live Settings, Not Cues
+
+**Status:** Accepted
+**Date:** 2026-10-03
+
+### Context
+
+The booth needs looks that change while they run: lightning palettes, spark timing, fog levels, per-side NeoPixels. The cue engine runs fixed step lists. Its effects are fixed when a cue starts, and coordinating "turn until armed, stop for N seconds, resume" needed cues starting and cancelling each other.
+
+### Decision
+
+- A fixed sequencer in code (`src/parade/show/controller.py`): ROTATING → ARMED → (EXTRA_REV) → STOPPED → ROTATING, driven by the performer button and the index switch.
+- A frame loop (30 fps) renders every output from the current phase and the live settings. The generators are lightning (per fixture), intermittent (sparks, fog), pulse, chase and fade.
+- Live settings in `config/show.yaml` (pydantic `ShowParams`), edited one value at a time from the Show tab (`POST /api/show/param`) and saved immediately.
+- When `show.enabled`, cues aren't run and the Builder is hidden.
+- An index watchdog replaces the old "every index pass stops the motor" protection.
+
+### Rationale
+
+- Effects read the settings every frame, so changes apply instantly without restarting anything.
+- The sequence is short and specific to this float. Plain code is clearer and easier to test than a general cue language.
+- Rendering from state makes "everything dark at once" and "sparks and fog off outside RUNNING" a single rule, not cleanup scattered across cancelled tasks.
+
+### Consequences
+
+- New looks mean code changes to the generators or the sequencer, not new cue files.
+- Settings changed on one device show on another device's Show tab after a reload.
+
+---
+
 ## Pending Decisions
 
 The following decisions cannot be made until more hardware information is available.

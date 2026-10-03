@@ -116,6 +116,32 @@ class DisplayConfig(BaseModel):
     ]
 
 
+class PixelSideConfig(BaseModel):
+    """A run of NeoPixels on one side of the booth (indices along the strip)."""
+    id: str
+    name: str = ""
+    start: int = Field(ge=0)
+    count: int = Field(ge=0)
+    reverse: bool = False  # chase direction along this side
+
+
+class ShowConfig(BaseModel):
+    """Wiring of the phone booth show to hardware. The look itself is live
+    settings in show.yaml (edited from the dashboard's Show tab)."""
+    enabled: bool = False  # True: the show sequencer drives the booth; cues are not run
+    params_file: str = "show.yaml"  # next to this config file
+    usage_file: str = "spark_usage.json"  # spark-on time since the hopper was refilled
+    motor_relay: str = "phone_booth_rotation"
+    performer_input: str = "performer_button"
+    index_input: str = "rotation_index"
+    interior_group: str = "interior"
+    exterior_group: str = "exterior"
+    spark_fixture: str = "cold_spark"
+    fog_fixture: str = "fog_machine"
+    pixel_sides: list[PixelSideConfig] = []
+    frame_hz: float = Field(default=30.0, ge=5, le=60)
+
+
 class SafetyConfig(BaseModel):
     estop_pin: str | None = None  # id of the gpio_inputs entry wired to the e-stop monitor contact
     armed_requires_operator: bool = True
@@ -139,6 +165,7 @@ class Config(BaseModel):
     pixel_strips: list[PixelStripConfig] = []
     status_lights: StatusLightsConfig = StatusLightsConfig()
     display: DisplayConfig = DisplayConfig()
+    show: ShowConfig = ShowConfig()
     safety: SafetyConfig = SafetyConfig()
     web: WebConfig = WebConfig()
 

@@ -16,6 +16,7 @@ import asyncio
 import logging
 import time
 from pathlib import Path
+from typing import Callable
 
 from parade.config.models import DisplayConfig
 from parade.core.state import SystemState, SystemStateMachine
@@ -81,7 +82,7 @@ def show_page(
     else:
         ip, ok = next(iter(nodes.items()))
         dmx = f"DMX {ip} " + {True: "OK", False: "NO REPLY", None: "?"}[ok]
-    return [fit(top, cols), fit(f"cue: {cue or 'idle'}", cols), fit(dmx, cols)]
+    return [fit(top, cols), fit(cue or "idle", cols), fit(dmx, cols)]
 
 
 def network_page(
@@ -125,7 +126,7 @@ class StatusDisplay:
         config: DisplayConfig,
         driver: DisplayInterface,
         state_machine: SystemStateMachine,
-        show_engine,
+        activity: Callable[[], str | None],
         power_monitor: PowerMonitor,
         node_ips: list[str],
         web_port: int,
@@ -133,7 +134,7 @@ class StatusDisplay:
         self._config = config
         self._driver = driver
         self._state_machine = state_machine
-        self._show_engine = show_engine
+        self._activity = activity
         self._power_monitor = power_monitor
         self._node_ips = node_ips
         self._web_port = web_port
@@ -160,7 +161,7 @@ class StatusDisplay:
             "join": join_page(net, controller_url(net, cfg.wifi_interface, self._web_port), cols),
             "show": show_page(
                 self._state_machine.state, self._state_machine.armed,
-                self._show_engine.active_cue, net.nodes, cols,
+                self._activity(), net.nodes, cols,
             ),
             "network": network_page(
                 net, [(i.label, i.interface) for i in cfg.interfaces], cfg.wifi_interface, cols,

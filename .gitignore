@@ -22,3 +22,4 @@ htmlcov/
 # Editor
 .vscode/
 *.swp
+config/spark_usage.json

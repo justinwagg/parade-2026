@@ -15,6 +15,8 @@ from parade.pixels.interface import PixelInterface
 from parade.health.power import PowerMonitor
 from parade.core.safety import SafetyMonitor
 from parade.core.manual import ManualController
+from parade.show.controller import ShowController
+from parade.show.params import ShowParamStore
 
 
 @dataclass
@@ -41,6 +43,9 @@ class AppContext:
     safety: SafetyMonitor | None = None
     # MANUAL-mode relay/pixel/input controls
     manual: ManualController | None = None
+    # Phone booth show sequencer and its live settings (None unless show.enabled)
+    show: ShowController | None = None
+    show_params: ShowParamStore | None = None
     # WebSocket clients for live push
     ws_clients: list = field(default_factory=list)
     # Bounded event log: each entry is a dict {ts, tag, level, msg}

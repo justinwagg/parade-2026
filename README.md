@@ -8,6 +8,8 @@ Show-control platform for an elaborate parade float. Coordinates DMX lighting, N
 
 **Milestone 2 in progress** — real Raspberry Pi drivers for GPIO inputs, the motor relay and NeoPixels, plus e-stop monitoring. Wiring the control box: follow [docs/WIRING_GUIDE.md](docs/WIRING_GUIDE.md). See [docs/STATUS.md](docs/STATUS.md).
 
+**Phone booth show** — the booth runs a fixed sequence (turn → performer ready → extra revolution → stop → turn) whose looks are changed live from the dashboard's **Show** tab. See [docs/SHOW.md](docs/SHOW.md).
+
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full system design and [docs/DECISIONS.md](docs/DECISIONS.md) for architectural decision records.
 
 ---
@@ -41,13 +43,23 @@ Open **http://localhost:8080** in a browser.
 The web UI at http://localhost:8080 provides:
 
 - **State control** — transition the system through SAFE → READY → RUNNING using the buttons
+- **Show tab** — the phone booth show: live phase and timers, every look and timing (lightning, sparks, fog, exterior, NeoPixel sides, stop pulse and fade-up), and the spark powder counter. Changes apply instantly and are saved to `config/show.yaml`. RUNNING starts the booth turning. See [docs/SHOW.md](docs/SHOW.md)
 - **MANUAL mode** — from SAFE, switch to MANUAL to drive relays and NeoPixels by hand and watch inputs register (Manual tab). Cues are ignored; returning to SAFE switches everything off
 - **DMX channel table** — live view of all 512 channels for each universe
 - **Scene buttons** — apply or fade to any defined scene
 - **Manual channel control** — enter a channel number and value (0–255) to set it directly
 - **Simulation panel** — toggle GPIO inputs or inject named operator triggers without physical hardware
 
+### Trying the show without hardware
+
+1. Start the app with simulated drivers and open the **Show** tab
+2. Go READY → RUNNING: the phase shows ROTATING and the motor relay turns on
+3. On the Live tab, toggle `performer_button` (ARMED), then `rotation_index`: the booth takes an extra revolution if the index came within 10 s, otherwise stops
+4. Watch the stop countdown, fog boost and the lights' pulse and fade-up, then rotation resumes
+
 ### Trying the cue engine
+
+With `show.enabled: false` in `config/default.yaml` the cue engine and Builder tab come back instead of the show.
 
 1. Start the app and open the dashboard
 2. In the **Simulation** panel, toggle `rotation_index` to active
@@ -114,6 +126,7 @@ Pin map and wiring rules: [docs/HARDWARE.md](docs/HARDWARE.md). Safety behaviour
 config/
   default.yaml        # hardware drivers, network, fixtures, GPIO
   scenes.yaml         # named DMX scenes (per-fixture channel values)
+  show.yaml           # live phone booth show settings (written by the Show tab)
 cues/
   example.yaml        # event triggers → action sequences
 docs/
@@ -122,6 +135,7 @@ docs/
   WIRING_GUIDE.md     # step-by-step control-box wiring with tests
   HARDWARE.md         # pin map, drivers, bench tool
   SAFETY.md           # e-stop and relay safety layers
+  SHOW.md             # phone booth show: cycle, settings, spark calibration
   HARDWARE_SETUP_CHECKLIST.md  # power, relay & NeoPixel background checklist
   NETWORK.md          # Pi networking: WiFi access point, Mac cable, Art-Net
   NETWORK_RECOVERY.md # printable one-page network recovery card
@@ -139,6 +153,9 @@ src/parade/
   gpio/               # GPIO interface + simulated and lgpio implementations
   relay/              # relay interface + simulated and lgpio implementations
   pixels/             # NeoPixel interface + simulated and SPI implementations
+  show/               # phone booth show: sequencer, effects, live settings
+  status_lights/      # BlinkStick state/health LEDs
+  display/            # OLED status display
   tools/hwcheck.py    # parade-hwcheck bench tool
   api/                # FastAPI routes, WebSocket push, static dashboard
   main.py             # entry point, wiring
@@ -228,8 +245,8 @@ Available action types: `set_dmx_scene`, `fade_dmx_scene`, `wait`, `blackout`.
 |---|---|---|
 | Chauvet DMX-AN2 | Art-Net → DMX node | Default IP `2.0.0.1`, port 6454, 2-universe |
 | Rockville RockWedge LED | DMX fixture | RGBWA+UV, 6ch or 10ch mode |
-| Turntable index microswitch | GPIO17 (NC) | Cuts the motor relay and triggers the show cue |
-| Performer button | GPIO27 (NO) | Sets `performer_is_ready` |
+| Turntable index microswitch | GPIO26 (NC) | Stops the booth after the performer button; index watchdog |
+| Performer button | GPIO27 (NO) | Arms the stop (performer ready) |
 | E-stop | Mains NC contact + GPIO22 monitor | Hardware cut; software goes to EMERGENCY STOP |
 | Relay module | GPIO18 | Switches the rotation motor (see WIRING_GUIDE Part 7) |
 | WS2812B NeoPixels | GPIO10 (SPI) via level shifter | 50 px |

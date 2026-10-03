@@ -563,6 +563,34 @@ hr.div{border:none;border-top:1px solid var(--border);margin:6px 0}
   cursor:pointer;transition:background .15s,color .15s;font-weight:500;
 }
 .toggle-pill button.active{background:var(--blue);color:#fff;font-weight:700}
+/* ══ Show tab ═══════════════════════════════════════════════════════════════ */
+#panel-show.active{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(330px,100%),1fr));align-items:start}
+.sh-wide{grid-column:1/-1}
+.sh-status{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.sh-phase{font-size:26px;font-weight:700;letter-spacing:.5px;color:var(--muted)}
+.sh-phase.ROTATING{color:var(--green)}.sh-phase.ARMED{color:var(--yellow)}
+.sh-phase.EXTRA_REV{color:var(--orange)}.sh-phase.STOPPED{color:var(--purple)}
+.sh-phase-sub{font-size:13px;color:var(--muted)}
+.sh-chips{display:flex;flex-wrap:wrap;gap:6px}
+.sh-chip{font-size:11px;padding:4px 10px;border-radius:20px;background:var(--raised);border:1px solid var(--border);color:var(--muted);font-variant-numeric:tabular-nums}
+.sh-chip.on{background:rgba(45,158,117,.1);border-color:rgba(45,158,117,.35);color:var(--green)}
+.sh-chip.hot{background:rgba(196,125,0,.1);border-color:rgba(196,125,0,.35);color:var(--yellow)}
+.sh-field{display:grid;grid-template-columns:minmax(90px,38%) 1fr auto;gap:8px;align-items:center;font-size:12px}
+.sh-field>label{color:var(--muted);line-height:1.25}
+.sh-field input[type=number]{width:76px;padding:4px 6px}
+.sh-field input[type=color]{width:52px;height:28px;padding:0;border:1px solid var(--border);border-radius:var(--radius-sm);background:none}
+.sh-field .sh-unit{font-size:10px;color:var(--muted);margin-left:3px}
+.sh-palette{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.sh-palette span{display:inline-flex;align-items:center;gap:2px}
+.sh-palette input[type=color]{width:34px;height:28px;padding:0;border:1px solid var(--border);border-radius:var(--radius-sm)}
+.sh-usage{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px}
+.sh-usage div{background:var(--raised);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 8px}
+.sh-usage b{display:block;font-size:16px;font-variant-numeric:tabular-nums}
+.sh-usage small{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.sh-note{font-size:11px;color:var(--muted);line-height:1.45}
+details.sh-more{margin:0}
+details.sh-more .details-body{gap:10px}
+
 /* ══ Responsive: tablet & phone ════════════════════════════════════════════ */
 @media(max-width:900px){
   /* Live and Builder stack into one column; the page scrolls as a whole */
@@ -638,15 +666,41 @@ hr.div{border:none;border-top:1px solid var(--border);margin:6px 0}
 
 <!-- ═══ TABS ══════════════════════════════════════════════════════════════ -->
 <div id="tabs">
+  <div class="tab" data-tab="show" id="tab-show" style="display:none">Show</div>
   <div class="tab active" data-tab="live">Live</div>
   <div class="tab" data-tab="hardware">Hardware</div>
   <div class="tab" data-tab="setup">Setup</div>
-  <div class="tab" data-tab="routines">Builder</div>
+  <div class="tab" data-tab="routines" id="tab-routines">Builder</div>
   <div class="tab" data-tab="manual">Manual</div>
 </div>
 
 <!-- ═══ MAIN ══════════════════════════════════════════════════════════════ -->
 <div id="main">
+
+  <!-- ─ SHOW ─────────────────────────────────────────────────────────── -->
+  <div class="panel" id="panel-show">
+    <div class="card sh-wide" id="sh-status-card">
+      <div class="card-title" style="justify-content:space-between">
+        <span><span class="ct-icon">🎬</span>Phone Booth Show</span>
+        <span class="msg" id="sh-msg" style="margin:0"></span>
+      </div>
+      <div class="sh-status">
+        <div class="sh-phase" id="sh-phase">IDLE</div>
+        <div class="sh-phase-sub" id="sh-phase-sub">Go READY → RUNNING to start the booth.</div>
+      </div>
+      <div class="sh-chips" id="sh-chips"></div>
+    </div>
+    <div class="card" id="sh-spark-card">
+      <div class="card-title" style="justify-content:space-between">
+        <span><span class="ct-icon">🧪</span>Spark Powder</span>
+        <button class="btn-sm" onclick="showSparkRefilled()">Hopper refilled</button>
+      </div>
+      <div class="sh-usage" id="sh-usage"></div>
+      <div id="sh-calibration"></div>
+      <div class="sh-note">Calibrate: refill and weigh the hopper, press <b>Hopper refilled</b>, run the show, then weigh again. Grams used ÷ “level-weighted spark seconds” = grams per spark-second.</div>
+    </div>
+    <div id="sh-sections" style="display:contents"></div>
+  </div>
 
   <!-- ─ LIVE ─────────────────────────────────────────────────────────── -->
   <div class="panel active" id="panel-live">
@@ -1371,6 +1425,7 @@ function showPowerDetails(){
 function applySnapshot(data){
   snap = data;
   applyPower(data.power);
+  applyShow(data.show);
   gpioLogical  = data.gpio         || {};
   gpioPhysical = data.gpio_physical|| {};
 
@@ -3689,6 +3744,231 @@ async function setupSave(){
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────────
+
+// ══ Show tab: live settings for the phone booth sequencer ═════════════════════
+let showParams=null, showSides=[];
+const showTimers={};
+
+function rgbHex(c){return '#'+(c||[0,0,0]).map(v=>Math.max(0,Math.min(255,v|0)).toString(16).padStart(2,'0')).join('')}
+function hexRgb(h){return [1,3,5].map(i=>parseInt(h.slice(i,i+2),16))}
+function getPath(obj,path){return path.split('.').reduce((o,k)=>o==null?o:o[k],obj)}
+
+const SH_LIGHTNING=base=>[
+  {p:`${base}.min_gap_ms`,l:'Shortest gap',u:'ms',min:20,max:5000,step:10},
+  {p:`${base}.max_gap_ms`,l:'Longest gap',u:'ms',min:20,max:15000,step:10},
+  {p:`${base}.flash_ms`,l:'Flash length',u:'ms',min:10,max:500,step:5},
+  {p:`${base}.burst_chance_pct`,l:'Flicker chance',u:'%',min:0,max:100,step:1},
+  {p:`${base}.brightness_pct`,l:'Brightness',u:'%',min:0,max:100,step:1},
+  {p:`${base}.palette`,l:'Colours',t:'palette'},
+];
+
+function showSections(){
+  const sec=[
+    {title:'Cycle',icon:'🔄',fields:[
+      {p:'cycle.stop_duration_s',l:'Stop for',u:'s',min:1,max:180,step:1},
+      {p:'cycle.extra_rev_window_s',l:'Extra revolution if index within',u:'s',min:0,max:60,step:0.5},
+      {p:'watchdog.enabled',l:'Index watchdog',t:'toggle'},
+      {p:'watchdog.factor',l:'Watchdog limit (× revolution)',u:'×',min:1.2,max:6,step:0.1},
+      {p:'watchdog.first_revolution_s',l:'Limit before 1st revolution',u:'s',min:5,max:300,step:1},
+    ]},
+    {title:'Sparks — while turning',icon:'✨',fields:[
+      {p:'spark.enabled',l:'Sparks',t:'toggle'},
+      {p:'spark.on_ms',l:'Burst length',u:'ms',min:50,max:5000,step:50},
+      {p:'spark.interval_s',l:'Gap between bursts',u:'s',min:0.5,max:300,step:0.5},
+      {p:'spark.jitter_pct',l:'Randomise gap',u:'±%',min:0,max:100,step:1},
+      {p:'spark.level_pct',l:'Spark height',u:'%',min:1,max:100,step:1},
+    ]},
+    {title:'Fog — periodic',icon:'🌫',fields:[
+      {p:'fog.enabled',l:'Periodic fog',t:'toggle'},
+      {p:'fog.on_s',l:'Fog for',u:'s',min:0.5,max:60,step:0.5},
+      {p:'fog.interval_s',l:'Gap between',u:'s',min:1,max:300,step:1},
+      {p:'fog.haze_pct',l:'Haze',u:'%',min:0,max:100,step:1},
+      {p:'fog.fan_pct',l:'Fan',u:'%',min:0,max:100,step:1},
+      {p:'fog.during_stop',l:'Also during the stop after the boost',t:'toggle'},
+    ]},
+    {title:'Fog boost — arming index → stop',icon:'💨',fields:[
+      {p:'fog_boost.haze_pct',l:'Haze',u:'%',min:0,max:100,step:1},
+      {p:'fog_boost.fan_pct',l:'Fan',u:'%',min:0,max:100,step:1},
+      {p:'fog_boost.after_stop_s',l:'Keep going after the stop',u:'s',min:0,max:120,step:1},
+    ]},
+    {title:'Interior — lightning while turning',icon:'⚡',fields:SH_LIGHTNING('interior')},
+    {title:'Exterior — fog boost & stop',icon:'🔦',fields:[
+      {p:'exterior.enabled',l:'Exterior lights (master)',t:'toggle'},
+      {p:'exterior.stop_coverage',l:'During the stop',t:'select',
+        opts:[['boost','Only while the fog boost runs'],['whole_stop','The whole stop']]},
+      {p:'exterior.effect',l:'Effect',t:'select',opts:['lightning','solid','pulse']},
+      {p:'exterior.color',l:'Colour (solid / pulse)',t:'color'},
+      {p:'exterior.pulse_period_s',l:'Pulse period',u:'s',min:0.2,max:10,step:0.1},
+      {t:'more',l:'Lightning settings',fields:SH_LIGHTNING('exterior.lightning')},
+    ]},
+    {title:'Exterior — while turning',icon:'🔦',fields:[
+      {p:'exterior.turning.effect',l:'Effect while turning',t:'select',opts:['off','lightning','solid','pulse']},
+      {p:'exterior.turning.color',l:'Colour (solid / pulse)',t:'color'},
+      {p:'exterior.turning.pulse_period_s',l:'Pulse period',u:'s',min:0.2,max:10,step:0.1},
+      {p:'exterior.turning.brightness_pct',l:'Brightness (solid / pulse)',u:'%',min:0,max:100,step:1},
+      {t:'more',l:'Lightning settings',fields:SH_LIGHTNING('exterior.turning.lightning')},
+    ]},
+    {title:'Stop — interior + NeoPixels',icon:'🌙',fields:[
+      {p:'stop.pulse_color',l:'Pulse colour',t:'color'},
+      {p:'stop.pulse_period_s',l:'Pulse period',u:'s',min:0.2,max:10,step:0.1},
+      {p:'stop.pulse_depth_pct',l:'Pulse depth',u:'%',min:0,max:100,step:1},
+      {p:'stop.dark_level_pct',l:'Brightness before fade-up',u:'%',min:0,max:100,step:1},
+      {p:'stop.fade_delay_s',l:'Fade up after',u:'s',min:0,max:60,step:0.5},
+      {p:'stop.fade_duration_s',l:'Fade-up time',u:'s',min:0,max:60,step:0.5},
+      {p:'stop.fade_color',l:'Faded-up colour',t:'color'},
+    ]},
+  ];
+  (showParams?.sides||[]).forEach((_,i)=>{
+    const name=showSides[i]?.name||`Side ${i+1}`;
+    const px=showSides[i]?` (${showSides[i].count} px)`:' (no pixels assigned)';
+    sec.push({title:`NeoPixels — ${name}${px}`,icon:'💡',fields:[
+      {p:`sides.${i}.effect`,l:'Effect while turning',t:'select',opts:['off','solid','chase','pulse','lightning']},
+      {p:`sides.${i}.color`,l:'Colour',t:'color'},
+      {p:`sides.${i}.background`,l:'Chase background',t:'color'},
+      {p:`sides.${i}.period_s`,l:'Chase lap / pulse period',u:'s',min:0.1,max:10,step:0.1},
+      {p:`sides.${i}.length`,l:'Chase length',u:'px',min:1,max:50,step:1},
+      {p:`sides.${i}.brightness_pct`,l:'Brightness',u:'%',min:0,max:100,step:1},
+      {t:'more',l:'Lightning settings',fields:SH_LIGHTNING(`sides.${i}.lightning`)},
+    ]});
+  });
+  return sec;
+}
+
+function showSend(path,value,delay=150){
+  clearTimeout(showTimers[path]);
+  showTimers[path]=setTimeout(async()=>{
+    try{
+      const r=await api('POST','/api/show/param',{path,value});
+      if(r.ok){showParams=r.params; renderShowStatusFromParams();}
+      else{flash($('sh-msg'),r.detail||'Not saved',false); renderShowForm();}
+    }catch(e){flash($('sh-msg'),e.message,false)}
+  },delay);
+}
+
+function shFieldHtml(f){
+  if(f.t==='more'){
+    return `<details class="sh-more"><summary>${f.l}</summary><div class="details-body">${f.fields.map(shFieldHtml).join('')}</div></details>`;
+  }
+  const v=getPath(showParams,f.p);
+  const id='sh-'+f.p.replace(/\./g,'-');
+  if(f.t==='toggle'){
+    return `<div class="sh-field"><label for="${id}">${f.l}</label>
+      <input type="checkbox" id="${id}" ${v?'checked':''} onchange="showSend('${f.p}',this.checked,0)" style="justify-self:start;width:20px;height:20px"><span></span></div>`;
+  }
+  if(f.t==='select'){
+    return `<div class="sh-field"><label for="${id}">${f.l}</label>
+      <select id="${id}" onchange="showSend('${f.p}',this.value,0)">${f.opts.map(o=>{
+        const [val,lab]=Array.isArray(o)?o:[o,o];
+        return `<option value="${val}" ${val===v?'selected':''}>${lab}</option>`;}).join('')}</select><span></span></div>`;
+  }
+  if(f.t==='color'){
+    return `<div class="sh-field"><label for="${id}">${f.l}</label>
+      <input type="color" id="${id}" value="${rgbHex(v)}" oninput="showSend('${f.p}',hexRgb(this.value))"><span></span></div>`;
+  }
+  if(f.t==='palette'){
+    const items=(v||[]).map((c,k)=>`<span><input type="color" value="${rgbHex(c)}" oninput="shPaletteSet('${f.p}',${k},this.value)">${
+      v.length>1?`<button class="btn-icon btn-sm" onclick="shPaletteDel('${f.p}',${k})" title="Remove">✕</button>`:''}</span>`).join('');
+    return `<div class="sh-field"><label>${f.l}</label>
+      <div class="sh-palette">${items}<button class="btn-sm" onclick="shPaletteAdd('${f.p}')">+</button></div><span></span></div>`;
+  }
+  const num=v==null?'':v;
+  return `<div class="sh-field"><label for="${id}">${f.l}</label>
+    <input type="range" min="${f.min}" max="${f.max}" step="${f.step}" value="${num===''?f.min:num}"
+      oninput="$('${id}').value=this.value;showSend('${f.p}',+this.value)">
+    <span><input type="number" id="${id}" min="${f.min}" max="${f.max}" step="${f.step}" value="${num}"
+      onchange="showSend('${f.p}',this.value===''?null:+this.value,0);this.closest('.sh-field').querySelector('input[type=range]').value=this.value"><span class="sh-unit">${f.u||''}</span></span></div>`;
+}
+
+function shPaletteSet(path,k,hex){
+  const pal=[...getPath(showParams,path)]; pal[k]=hexRgb(hex);
+  getPath(showParams,path)[k]=pal[k];
+  showSend(path,pal);
+}
+function shPaletteDel(path,k){
+  const pal=getPath(showParams,path).filter((_,i)=>i!==k);
+  showSend(path,pal,0); setTimeout(renderShowForm,250);
+}
+function shPaletteAdd(path){
+  const pal=[...getPath(showParams,path),[255,255,255]];
+  showSend(path,pal,0); setTimeout(renderShowForm,250);
+}
+
+function renderShowForm(){
+  if(!showParams) return;
+  $('sh-sections').innerHTML=showSections().map(sec=>`
+    <div class="card"><div class="card-title"><span class="ct-icon">${sec.icon}</span>${sec.title}</div>
+      ${sec.fields.map(shFieldHtml).join('')}
+    </div>`).join('');
+  $('sh-calibration').innerHTML=[
+    {p:'calibration.grams_per_spark_s',l:'Grams per spark-second',u:'g',min:0,max:20,step:0.01},
+    {p:'calibration.hopper_grams',l:'Hopper filled with',u:'g',min:0,max:2000,step:10},
+    {p:'calibration.parade_minutes',l:'Parade length',u:'min',min:0,max:300,step:5},
+  ].map(shFieldHtml).join('');
+}
+
+function fmtMin(s){return s==null?'—':s<120?`${s.toFixed(0)} s`:`${(s/60).toFixed(1)} min`}
+
+function applyShow(sh){
+  if(!sh) return;
+  const ph=$('sh-phase'); if(!ph) return;
+  ph.textContent=sh.phase.replace('_',' ');
+  ph.className='sh-phase '+sh.phase;
+  const sub={
+    IDLE:'Go READY → RUNNING to start the booth.',
+    ROTATING:`Turning. Waiting for the performer button. (${sh.phase_s??0} s)`,
+    ARMED:`Performer ready ${sh.phase_s} s ago. Stops at the next index pass${showParams?` (extra revolution if within ${showParams.cycle.extra_rev_window_s} s)`:''}.`,
+    EXTRA_REV:'One extra revolution so the fog can build. Stops at the next index.',
+    STOPPED:`Stopped — ${sh.stop_left_s} s until the booth turns again.`,
+  }[sh.phase]||'';
+  $('sh-phase-sub').textContent=sub;
+  const chip=(txt,cls)=>`<span class="sh-chip ${cls||''}">${txt}</span>`;
+  $('sh-chips').innerHTML=[
+    chip('Motor '+(sh.motor?'ON':'off'),sh.motor?'on':''),
+    chip('Sparks '+(sh.spark_pct?'FIRING':'off'),sh.spark_pct?'hot':''),
+    chip(`Fog haze ${Math.round(sh.haze_pct)}% · fan ${Math.round(sh.fan_pct)}%`,sh.haze_pct?'on':''),
+    chip('Fog boost '+(sh.boost?'ON':'off'),sh.boost?'hot':''),
+    chip('Revolution '+(sh.revolution_s!=null?sh.revolution_s+' s':'—')),
+    chip('Watchdog '+(sh.watchdog_left_s!=null?sh.watchdog_left_s+' s left':'idle')),
+  ].join('');
+  const sp=sh.spark||{};
+  const tile=(v,l)=>`<div><b>${v}</b><small>${l}</small></div>`;
+  $('sh-usage').innerHTML=[
+    tile(fmtMin(sp.used_on_s),'spark time used'),
+    tile((sp.used_weighted_s??0).toFixed(0),'level-weighted spark-s'),
+    tile(`${sp.duty_pct??0}%`,'duty while turning'),
+    tile((sp.weighted_s_per_hour??0).toFixed(0),'weighted spark-s / hour'),
+    ...(sp.used_g!=null?[
+      tile(`${sp.used_g} g`,'used since refill'),
+      tile(`${sp.left_g} g`,'left (est.)'),
+      tile(`${sp.g_per_hour} g`,'per hour turning'),
+      tile(sp.hours_left!=null?`${sp.hours_left} h`:'—','until empty'),
+      tile(`${sp.parade_need_g} g`,'for the whole parade'),
+      tile(sp.interval_s_to_last_parade!=null?`${sp.interval_s_to_last_parade} s`:'—','gap to last the parade'),
+    ]:[]),
+  ].join('');
+}
+function renderShowStatusFromParams(){ if(snap?.show) applyShow(snap.show); }
+
+async function showSparkRefilled(){
+  if(!confirm('Reset the spark usage counter (hopper refilled)?')) return;
+  const r=await api('POST','/api/show/spark/refilled');
+  flash($('sh-msg'),r.ok?'Usage reset':'Failed',!!r.ok);
+}
+
+async function showInit(){
+  try{
+    const r=await fetch('/api/show');
+    if(!r.ok) return;  // show sequencer not enabled: keep the Builder
+    const d=await r.json();
+    showParams=d.params; showSides=d.sides||[];
+    $('tab-show').style.display='';
+    $('tab-routines').style.display='none';
+    renderShowForm();
+    applyShow(d.status);
+    $('tab-show').click();
+  }catch(e){console.warn('Show init error',e)}
+}
+
 (async function init(){
   try{
     const [stateR,cuesR,cfgR]=await Promise.all([
@@ -3703,6 +3983,7 @@ async function setupSave(){
   bldrRenderSteps();
   bldrLoadLibrary();
   await setupLoad();
+  await showInit();
   connectWS();
   startPoll();
 })();
